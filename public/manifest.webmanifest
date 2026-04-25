@@ -1,0 +1,18 @@
+{
+  "name": "QadamGraph",
+  "short_name": "Qadam",
+  "description": "Ауыл оқушыларына арналған мүмкіндік картасы",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAF7",
+  "theme_color": "#0F766E",
+  "lang": "kk",
+  "icons": [
+    {
+      "src": "/icons/qadam.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
