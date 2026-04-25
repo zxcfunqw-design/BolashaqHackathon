@@ -1,6 +1,41 @@
 {
-    "profession": "Программист (Software Engineer)",
-    "target_audience": "Школьник из сельской местности (руральный Казахстан)",
+    "student_profile": {
+        "name": "Никита",
+        "background": "Школьник из Щучинска"
+    },
+    "test_results_professions": [
+        {
+            "profession_name": "DevOps-инженер",
+            "status": "pending_graph"
+        },
+        {
+            "profession_name": "Инженер (электроника/робототехника)",
+            "status": "pending_graph"
+        },
+        {
+            "profession_name": "Бизнесмен (Tech Entrepreneur)",
+            "status": "pending_graph"
+        },
+        {
+            "profession_name": "Python-программист",
+            "general_recommendations_minigraph": {
+                "hard_skills": [
+                    "Основы синтаксиса Python",
+                    "Алгоритмы и структуры данных",
+                    "Работа с базами данных (SQL)",
+                    "Системы контроля версий (Git/GitHub)"
+                ],
+                "soft_skills": [
+                    "Английский язык (для чтения документации)",
+                    "Умение искать информацию (StackOverflow, документация)",
+                    "Тайм-менеджмент"
+                ],
+                "first_practical_steps": [
+                    "Пройти бесплатный курс (например, 'Поколение Python' на Stepik)",
+                    "Написать телеграм-бота",
+                    "Сделать парсер погоды с сайта"
+                ]
+            },
     "universities": {
         "dream_tier": [
             {
