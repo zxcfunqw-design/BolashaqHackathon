@@ -8,6 +8,9 @@ export type UniversityGraphNode = {
   layer: GraphLayer;
   title: string;
   subtitle: string;
+  costKzt: number;
+  costNote?: string;
+  fundingOptions?: string[];
   x: number;
   y: number;
   details: string[];
@@ -28,7 +31,9 @@ export const graphBoard = {
   height: 720
 };
 
-export const universityGraphNodes: UniversityGraphNode[] = [
+const baseUniversityGraphNodes: Array<
+  Omit<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions">
+> = [
   {
     id: "you",
     type: "student",
@@ -375,6 +380,143 @@ export const universityGraphNodes: UniversityGraphNode[] = [
     sourceLabel: "KBTU SITE programs"
   }
 ];
+
+const nodeFinance: Record<
+  string,
+  Pick<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions">
+> = {
+  you: {
+    costKzt: 0,
+    costNote: "Profile setup is free.",
+    fundingOptions: ["No funding needed"]
+  },
+  "ai-engineer": {
+    costKzt: 0,
+    costNote: "Career direction choice.",
+    fundingOptions: ["No funding needed"]
+  },
+  "software-engineer": {
+    costKzt: 0,
+    costNote: "Career direction choice.",
+    fundingOptions: ["No funding needed"]
+  },
+  "robotics-engineer": {
+    costKzt: 0,
+    costNote: "Career direction choice.",
+    fundingOptions: ["No funding needed"]
+  },
+  "ai-python": {
+    costKzt: 12000,
+    costNote: "Phone-friendly Python course, mobile data and practice materials.",
+    fundingOptions: ["Free YouTube/Coursera audit", "School computer club", "Family micro-budget"]
+  },
+  "ai-math": {
+    costKzt: 18000,
+    costNote: "ENT/olympiad practice set and tutoring reserve.",
+    fundingOptions: ["School teacher support", "Free online problem banks", "Local sponsor"]
+  },
+  "ai-english": {
+    costKzt: 20000,
+    costNote: "English prep materials and speaking practice.",
+    fundingOptions: ["Free language clubs", "Library resources", "Family micro-budget"]
+  },
+  "software-js": {
+    costKzt: 10000,
+    costNote: "Web basics course and hosting experiments.",
+    fundingOptions: ["FreeCodeCamp", "GitHub Pages", "School computer lab"]
+  },
+  "software-api": {
+    costKzt: 14000,
+    costNote: "Backend/API practice, database sandbox and deployment reserve.",
+    fundingOptions: ["Free cloud tier", "Teacher mentor", "Hackathon credits"]
+  },
+  "software-product": {
+    costKzt: 5000,
+    costNote: "User interviews, printing and presentation materials.",
+    fundingOptions: ["School project budget", "Team split", "No-code free tools"]
+  },
+  "robotics-physics": {
+    costKzt: 12000,
+    costNote: "Physics prep materials and simple experiment supplies.",
+    fundingOptions: ["School lab", "Teacher support", "Reused materials"]
+  },
+  "robotics-iot": {
+    costKzt: 30000,
+    costNote: "Sensors, wires or simulator upgrade budget.",
+    fundingOptions: ["Tinkercad simulation", "Borrowed Arduino kit", "Mini-grant"]
+  },
+  "robotics-cad": {
+    costKzt: 15000,
+    costNote: "CAD practice, model printing reserve or materials.",
+    fundingOptions: ["Free CAD software", "School makerspace", "Local sponsor"]
+  },
+  "ai-bot": {
+    costKzt: 7000,
+    costNote: "Bot hosting, internet and demo materials.",
+    fundingOptions: ["Free hosting tier", "School server", "Team split"]
+  },
+  "ai-data": {
+    costKzt: 9000,
+    costNote: "Dataset preparation, charts and presentation.",
+    fundingOptions: ["Open data", "Free spreadsheet tools", "Teacher mentor"]
+  },
+  "ai-olympiad": {
+    costKzt: 25000,
+    costNote: "Registration/travel reserve and preparation materials.",
+    fundingOptions: ["School contest budget", "District support", "Grant application"]
+  },
+  "software-local-event": {
+    costKzt: 12000,
+    costNote: "Event materials, forms, printing and local logistics.",
+    fundingOptions: ["School budget", "Community partner", "Free digital forms"]
+  },
+  "software-hackathon": {
+    costKzt: 22000,
+    costNote: "Hackathon registration, transport or demo reserve.",
+    fundingOptions: ["Free online hackathons", "Team split", "Sponsor reimbursement"]
+  },
+  "robotics-sensor": {
+    costKzt: 42000,
+    costNote: "Sensor prototype materials or replacement parts.",
+    fundingOptions: ["Borrowed kit", "Mini-grant", "Local business sponsor"]
+  },
+  "robotics-demo-day": {
+    costKzt: 14000,
+    costNote: "Demo stand, poster and local presentation materials.",
+    fundingOptions: ["School event budget", "Reused materials", "Parent committee"]
+  },
+  aitu: {
+    costKzt: 850000,
+    costNote: "Estimated first-year self-funded university budget placeholder.",
+    fundingOptions: ["State grant", "University scholarship", "Part-time tech work", "Family plan"]
+  },
+  nu: {
+    costKzt: 0,
+    costNote: "Grant-focused route placeholder; scholarship competition is required.",
+    fundingOptions: ["NU grant", "Need-based support", "External scholarship"]
+  },
+  satbayev: {
+    costKzt: 720000,
+    costNote: "Estimated first-year self-funded engineering budget placeholder.",
+    fundingOptions: ["State grant", "University discount", "Regional sponsor", "Family plan"]
+  },
+  kbtu: {
+    costKzt: 1100000,
+    costNote: "Estimated first-year self-funded IT/engineering budget placeholder.",
+    fundingOptions: ["State grant", "Merit scholarship", "Corporate scholarship", "Part-time work"]
+  }
+};
+
+const defaultFinance: Pick<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions"> = {
+  costKzt: 0,
+  costNote: "Cost is not estimated yet.",
+  fundingOptions: ["Clarify with school mentor"]
+};
+
+export const universityGraphNodes: UniversityGraphNode[] = baseUniversityGraphNodes.map((node) => ({
+  ...node,
+  ...(nodeFinance[node.id] ?? defaultFinance)
+}));
 
 export const universityGraphEdges: UniversityGraphEdge[] = [
   { id: "you-ai", from: "you", to: "ai-engineer", label: "top match", tone: "primary" },
