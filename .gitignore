@@ -3,3 +3,6 @@ dist/
 *.tsbuildinfo
 vite-dev*.log
 qadamgraph-*.png
+.env
+.env.local
+.env.*.local

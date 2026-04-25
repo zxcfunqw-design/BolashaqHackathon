@@ -26,13 +26,28 @@ const defaultUserData = () => ({
   },
   portfolio: {
     fields: {
+      studentName: "Aruzhan",
+      grade: "9th grade",
+      school: "Rural school in Kazakhstan",
+      careerGoal: "AI engineer",
+      targetUniversity: "Astana IT University",
+      targetProgram: "Computer Science / Artificial Intelligence",
+      academicStrengths: "Math, physics, informatics and English",
       did: "Built a simple Telegram bot idea for school announcements",
       participated: "STEM Hackathon for Rural Schools",
       learned: "Python basics, project planning and explaining a problem",
-      result: "Created a working draft and received teacher feedback"
+      result: "Created a working draft and received teacher feedback",
+      activities: "School coding club, helping classmates with informatics tasks",
+      awards: "Participation certificate from the hackathon",
+      communityImpact:
+        "The bot idea helps students and teachers receive announcements faster with weak internet",
+      evidence:
+        "Hackathon certificate, screenshots of the bot draft, teacher feedback, project description",
+      nextStep: "Improve the prototype and apply to a university engineering program",
+      language: "ru"
     },
     output:
-      "I participated in STEM Hackathon for Rural Schools and built a simple Telegram bot idea for school announcements. Through this work, I learned Python basics, project planning and explaining a problem. As a result, I created a working draft and received teacher feedback. This project shows my interest in technology, engineering and solving practical problems for my community.",
+      "Applicant snapshot: Aruzhan, 9th grade, Rural school in Kazakhstan. Career goal: AI engineer.\n\nTarget fit: Computer Science / Artificial Intelligence at Astana IT University. Academic strengths: Math, physics, informatics and English.\n\nEvidence highlights: Built a simple Telegram bot idea for school announcements through STEM Hackathon for Rural Schools. Result: Created a working draft and received teacher feedback.\n\nActivities: School coding club, helping classmates with informatics tasks. Awards/certificates: Participation certificate from the hackathon.\n\nProject impact: The bot idea helps students and teachers receive announcements faster with weak internet. Skills learned: Python basics, project planning and explaining a problem.\n\nEvidence to attach: Hackathon certificate, screenshots of the bot draft, teacher feedback, project description. Next step: Improve the prototype and apply to a university engineering program.",
     generated: false,
     updatedAt: new Date().toISOString()
   },
