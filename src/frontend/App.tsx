@@ -5,6 +5,7 @@ import {
   getCurrentUser,
   loadUserPath,
   logoutUser,
+  refreshCurrentUserFromBackend,
   refreshSavedPath,
   updatePortfolio,
   updateQuizAnswers,
@@ -45,6 +46,19 @@ export function App() {
     setCurrentUser(nextUser);
     return nextUser;
   };
+
+  useEffect(() => {
+    refreshCurrentUserFromBackend()
+      .then((user) => {
+        if (!user) return;
+        setCurrentUser(user);
+        setLanguage(user.language);
+        setSelectedGoals(user.data.selectedGoals);
+        setPath(user.data.path);
+        setFlowStep(user.data.onboardingCompleted ? "app" : "welcome");
+      })
+      .catch(() => undefined);
+  }, []);
 
   const handleAuth = (user: UserAccount) => {
     setCurrentUser(user);

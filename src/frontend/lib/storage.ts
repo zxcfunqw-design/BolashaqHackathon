@@ -12,6 +12,8 @@ import type {
 } from "../types";
 
 const APP_KEY = "qadamgraph:app-json";
+const SESSION_KEY = "qadamgraph:session-token";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
 
 export const initialPortfolioFields = {
   did: "Built a simple Telegram bot idea for school announcements",
@@ -61,6 +63,31 @@ export function saveAppState(state: AppJsonState) {
   localStorage.setItem(APP_KEY, JSON.stringify(state));
 }
 
+function saveSessionToken(token: string) {
+  localStorage.setItem(SESSION_KEY, token);
+}
+
+function getSessionToken() {
+  return localStorage.getItem(SESSION_KEY);
+}
+
+function clearSessionToken() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function cacheCurrentUser(user: UserAccount) {
+  const state = loadAppState();
+
+  saveAppState({
+    ...state,
+    currentUserId: user.id,
+    users: {
+      ...state.users,
+      [user.id]: user
+    }
+  });
+}
+
 export function getCurrentUser(): UserAccount | null {
   const state = loadAppState();
 
@@ -69,11 +96,31 @@ export function getCurrentUser(): UserAccount | null {
 }
 
 export function logoutUser() {
+  const token = getSessionToken();
   const state = loadAppState();
   saveAppState({ ...state, currentUserId: null });
+  clearSessionToken();
+
+  if (token) {
+    void apiRequest("/api/auth/logout", {
+      method: "POST",
+      token
+    }).catch(() => undefined);
+  }
 }
 
 export async function registerUser(input: RegisterInput): Promise<UserAccount> {
+  const backendAuth = await apiRequest<AuthPayload>("/api/auth/register", {
+    method: "POST",
+    body: input
+  });
+
+  if (backendAuth) {
+    saveSessionToken(backendAuth.token);
+    cacheCurrentUser(backendAuth.user);
+    return backendAuth.user;
+  }
+
   const state = loadAppState();
   const normalizedLogin = normalizeLogin(input.login);
   const existing = Object.values(state.users).find((user) => user.login === normalizedLogin);
@@ -110,6 +157,17 @@ export async function registerUser(input: RegisterInput): Promise<UserAccount> {
 }
 
 export async function loginUser(input: LoginInput): Promise<UserAccount> {
+  const backendAuth = await apiRequest<AuthPayload>("/api/auth/login", {
+    method: "POST",
+    body: input
+  });
+
+  if (backendAuth) {
+    saveSessionToken(backendAuth.token);
+    cacheCurrentUser(backendAuth.user);
+    return backendAuth.user;
+  }
+
   const state = loadAppState();
   const normalizedLogin = normalizeLogin(input.login);
   const user = Object.values(state.users).find((account) => account.login === normalizedLogin);
@@ -142,6 +200,7 @@ export function updateCurrentUser(updater: (user: UserAccount) => UserAccount) {
     }
   });
 
+  void syncUserToBackend(updated).catch(() => undefined);
   return updated;
 }
 
@@ -237,4 +296,83 @@ async function hashPassword(password: string) {
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
+}
+
+export async function refreshCurrentUserFromBackend() {
+  const token = getSessionToken();
+  if (!token) return getCurrentUser();
+
+  const response = await apiRequest<{ user: UserAccount }>("/api/me", {
+    method: "GET",
+    token
+  });
+
+  if (!response) return getCurrentUser();
+
+  cacheCurrentUser(response.user);
+  return response.user;
+}
+
+type AuthPayload = {
+  token: string;
+  user: UserAccount;
+};
+
+type ApiRequestOptions = {
+  method: "GET" | "POST" | "PATCH";
+  body?: unknown;
+  token?: string;
+};
+
+async function syncUserToBackend(user: UserAccount) {
+  const token = getSessionToken();
+  if (!token) return;
+
+  await apiRequest("/api/me/profile", {
+    method: "PATCH",
+    token,
+    body: {
+      name: user.name,
+      grade: user.grade,
+      region: user.region,
+      language: user.language
+    }
+  });
+
+  await apiRequest("/api/me/data", {
+    method: "PATCH",
+    token,
+    body: {
+      data: user.data
+    }
+  });
+}
+
+async function apiRequest<T>(path: string, options: ApiRequestOptions): Promise<T | null> {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json"
+  };
+  const token = options.token ?? getSessionToken();
+
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method,
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      if (response.status === 401) clearSessionToken();
+      throw new Error(payload.error ?? "Backend request failed");
+    }
+
+    return payload as T;
+  } catch (error) {
+    if (error instanceof TypeError) return null;
+    throw error;
+  }
 }
