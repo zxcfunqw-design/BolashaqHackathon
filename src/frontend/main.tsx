@@ -9,8 +9,28 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );
 
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}
+
+if ("serviceWorker" in navigator && import.meta.env.DEV) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => registrations.forEach((registration) => registration.unregister()))
+      .catch(() => undefined);
+
+    if ("caches" in window) {
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys.filter((key) => key.startsWith("qadamgraph-")).map((key) => caches.delete(key))
+          )
+        )
+        .catch(() => undefined);
+    }
   });
 }

@@ -5,13 +5,16 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { ProgressBar } from "../components/ui/ProgressBar";
 
+import type { QuizAnswers } from "../types";
+
 type QuizScreenProps = {
-  onComplete: () => void;
+  onComplete: (answers: QuizAnswers) => void;
+  initialAnswers?: QuizAnswers;
 };
 
-export function QuizScreen({ onComplete }: QuizScreenProps) {
+export function QuizScreen({ onComplete, initialAnswers = {} }: QuizScreenProps) {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<QuizAnswers>(initialAnswers);
   const question = quizQuestions[step];
   const selected = answers[question.id];
   const progress = useMemo(() => Math.round(((step + 1) / 12) * 100), [step]);
@@ -22,7 +25,7 @@ export function QuizScreen({ onComplete }: QuizScreenProps) {
 
   const next = () => {
     if (step === quizQuestions.length - 1) {
-      onComplete();
+      onComplete(answers);
       return;
     }
 
