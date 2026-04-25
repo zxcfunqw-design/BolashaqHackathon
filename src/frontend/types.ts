@@ -78,7 +78,7 @@ export type UserAccount = {
   grade: string;
   region: string;
   language: Language;
-  passwordHash: string;
+  passwordHash?: string;
   createdAt: string;
   updatedAt: string;
   data: UserAppData;
