@@ -7,6 +7,8 @@ type AppShellProps = PropsWithChildren<{
   online: boolean;
   activeTab?: MainTab;
   onTabChange?: (tab: MainTab) => void;
+  accountName?: string;
+  onAccountSwitch?: () => void;
   title?: string;
   showNav?: boolean;
 }>;
@@ -16,6 +18,8 @@ export function AppShell({
   online,
   activeTab,
   onTabChange,
+  accountName,
+  onAccountSwitch,
   title = "QadamGraph",
   showNav = false
 }: AppShellProps) {
@@ -30,7 +34,18 @@ export function AppShell({
               </p>
               <h1 className="text-lg font-bold">{title}</h1>
             </div>
-            <OfflineBadge online={online} />
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <OfflineBadge online={online} />
+              {accountName && onAccountSwitch ? (
+                <button
+                  className="min-h-8 rounded-full border border-qadam-border bg-white px-3 text-xs font-bold text-qadam-primary"
+                  onClick={onAccountSwitch}
+                  type="button"
+                >
+                  Account
+                </button>
+              ) : null}
+            </div>
           </div>
           {!online ? (
             <p className="mt-2 text-xs font-medium text-qadam-muted">

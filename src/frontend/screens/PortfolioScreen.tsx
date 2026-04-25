@@ -2,26 +2,39 @@ import { WandSparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { createPortfolioOutput } from "../lib/storage";
+import type { PortfolioDraft, PortfolioFields } from "../types";
 
-const initialFields = {
-  did: "Built a simple Telegram bot idea for school announcements",
-  participated: "STEM Hackathon for Rural Schools",
-  learned: "Python basics, project planning and explaining a problem",
-  result: "Created a working draft and received teacher feedback"
+type PortfolioScreenProps = {
+  portfolio: PortfolioDraft;
+  onPortfolioChange: (portfolio: PortfolioDraft) => void;
 };
 
-export function PortfolioScreen() {
-  const [fields, setFields] = useState(initialFields);
-  const [generated, setGenerated] = useState(false);
+export function PortfolioScreen({ portfolio, onPortfolioChange }: PortfolioScreenProps) {
+  const [fields, setFields] = useState<PortfolioFields>(portfolio.fields);
+  const [generated, setGenerated] = useState(portfolio.generated);
 
-  const output = useMemo(
-    () =>
-      `I participated in ${fields.participated} and ${fields.did}. Through this work, I learned ${fields.learned}. As a result, I ${fields.result}. This project shows my interest in technology, engineering and solving practical problems for my community.`,
-    [fields]
-  );
+  const output = useMemo(() => createPortfolioOutput(fields), [fields]);
 
-  const updateField = (key: keyof typeof fields, value: string) => {
-    setFields((current) => ({ ...current, [key]: value }));
+  const saveDraft = (nextFields: PortfolioFields, nextGenerated = generated) => {
+    onPortfolioChange({
+      fields: nextFields,
+      output: createPortfolioOutput(nextFields),
+      generated: nextGenerated,
+      updatedAt: new Date().toISOString()
+    });
+  };
+
+  const updateField = (key: keyof PortfolioFields, value: string) => {
+    const next = { ...fields, [key]: value };
+    setFields(next);
+    setGenerated(false);
+    saveDraft(next, false);
+  };
+
+  const generate = () => {
+    setGenerated(true);
+    saveDraft(fields, true);
   };
 
   return (
@@ -55,7 +68,7 @@ export function PortfolioScreen() {
           />
         </div>
 
-        <Button fullWidth className="mt-5" onClick={() => setGenerated(true)}>
+        <Button fullWidth className="mt-5" onClick={generate}>
           <span className="inline-flex items-center justify-center gap-2">
             <WandSparkles size={17} />
             Create portfolio description

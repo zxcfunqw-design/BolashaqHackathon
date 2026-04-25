@@ -7,10 +7,16 @@ import { Card } from "../components/ui/Card";
 type WelcomeScreenProps = {
   language: Language;
   onLanguageChange: (language: Language) => void;
+  onAccountOpen?: () => void;
   onStart: () => void;
 };
 
-export function WelcomeScreen({ language, onLanguageChange, onStart }: WelcomeScreenProps) {
+export function WelcomeScreen({
+  language,
+  onAccountOpen,
+  onLanguageChange,
+  onStart
+}: WelcomeScreenProps) {
   return (
     <div className="flex min-h-[calc(100vh-104px)] flex-col justify-between gap-6">
       <section className="pt-6">
@@ -60,6 +66,17 @@ export function WelcomeScreen({ language, onLanguageChange, onStart }: WelcomeSc
             <ArrowRight size={17} />
           </span>
         </Button>
+        {onAccountOpen ? (
+          <Button
+            fullWidth
+            className="mt-2"
+            variant="secondary"
+            onClick={onAccountOpen}
+            data-testid="welcome-account"
+          >
+            Register / Login
+          </Button>
+        ) : null}
       </Card>
 
       <p className="flex items-center justify-center gap-2 pb-2 text-center text-xs font-medium text-qadam-muted">

@@ -7,3 +7,6 @@ npm install
 npm run dev
 ```
 
+Demo registration/login is local-only. App data is saved as one JSON object in
+`localStorage` under `qadamgraph:app-json`.
+

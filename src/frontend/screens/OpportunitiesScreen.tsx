@@ -6,9 +6,15 @@ import { OpportunityCard } from "../components/OpportunityCard";
 
 type OpportunitiesScreenProps = {
   online: boolean;
+  savedOpportunityIds: string[];
+  onSaveOpportunity: (id: string) => void;
 };
 
-export function OpportunitiesScreen({ online }: OpportunitiesScreenProps) {
+export function OpportunitiesScreen({
+  online,
+  savedOpportunityIds,
+  onSaveOpportunity
+}: OpportunitiesScreenProps) {
   return (
     <div className="space-y-4">
       <section className="flex items-start justify-between gap-3">
@@ -34,7 +40,12 @@ export function OpportunitiesScreen({ online }: OpportunitiesScreenProps) {
 
       <div className="space-y-3">
         {opportunities.map((opportunity) => (
-          <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+          <OpportunityCard
+            key={opportunity.id}
+            opportunity={opportunity}
+            saved={savedOpportunityIds.includes(opportunity.id)}
+            onSave={onSaveOpportunity}
+          />
         ))}
       </div>
     </div>

@@ -16,6 +16,8 @@ export type QuizQuestion = {
   options: string[];
 };
 
+export type QuizAnswers = Record<string, string>;
+
 export type PathNodeData = {
   id: string;
   title: string;
@@ -35,6 +37,20 @@ export type UserPath = {
   savedAt: string;
 };
 
+export type PortfolioFields = {
+  did: string;
+  participated: string;
+  learned: string;
+  result: string;
+};
+
+export type PortfolioDraft = {
+  fields: PortfolioFields;
+  output: string;
+  generated: boolean;
+  updatedAt: string;
+};
+
 export type Opportunity = {
   id: string;
   title: string;
@@ -44,6 +60,48 @@ export type Opportunity = {
   language: string;
   internet: "low" | "medium" | "high";
   deadline: string;
+};
+
+export type UserAppData = {
+  onboardingCompleted: boolean;
+  selectedGoals: string[];
+  quizAnswers: QuizAnswers;
+  path: UserPath;
+  portfolio: PortfolioDraft;
+  savedOpportunities: string[];
+};
+
+export type UserAccount = {
+  id: string;
+  name: string;
+  login: string;
+  grade: string;
+  region: string;
+  language: Language;
+  passwordHash: string;
+  createdAt: string;
+  updatedAt: string;
+  data: UserAppData;
+};
+
+export type AppJsonState = {
+  version: 1;
+  currentUserId: string | null;
+  users: Record<string, UserAccount>;
+};
+
+export type RegisterInput = {
+  name: string;
+  login: string;
+  password: string;
+  grade: string;
+  region: string;
+  language: Language;
+};
+
+export type LoginInput = {
+  login: string;
+  password: string;
 };
 
 export type PlanSection = {

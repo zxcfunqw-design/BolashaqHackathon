@@ -12,9 +12,11 @@ const internetTone = {
 
 type OpportunityCardProps = {
   opportunity: Opportunity;
+  saved?: boolean;
+  onSave?: (id: string) => void;
 };
 
-export function OpportunityCard({ opportunity }: OpportunityCardProps) {
+export function OpportunityCard({ opportunity, saved = false, onSave }: OpportunityCardProps) {
   return (
     <Card>
       <div className="flex items-start justify-between gap-3">
@@ -48,10 +50,10 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
       </dl>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Button variant="secondary">
+        <Button variant="secondary" onClick={() => onSave?.(opportunity.id)}>
           <span className="inline-flex items-center justify-center gap-2">
             <Bookmark size={16} />
-            Save
+            {saved ? "Saved" : "Save"}
           </span>
         </Button>
         <Button>
