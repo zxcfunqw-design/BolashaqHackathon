@@ -1,66 +1,64 @@
 {
-    "student_profile": {
-        "name": "Никита",
-        "background": "Школьник из Щучинска"
+  "student_profile": {
+    "name": "Никита",
+    "background": "Школьник из Щучинска"
+  },
+  "test_results_professions": [
+    {
+      "profession_name": "DevOps-инженер",
+      "status": "pending_graph"
     },
-     "test_results_professions": [
-        {
-            "profession_name": "DevOps-инженер",
-            "status": "pending_graph"
-        },
-        {
-            "profession_name": "Инженер (электроника/робототехника)",
-            "status": "pending_graph"
-        },
-        {
-            "profession_name": "Бизнесмен (Tech Entrepreneur)",
-            "status": "pending_graph"
-        },
-        {
-            {
-  "profession_name": "Python-программист",
-  "general_recommendations_minigraph": {
-    "hard_skills": [
-      {
-        "skill_name": "Основы синтаксиса Python",
-        "additional_info": "(переменные, циклы, функции, классы, стандарт PEP8)"
-      },
-      {
-        "skill_name": "Алгоритмы и структуры данных",
-        "additional_info": "(оценка сложности Big O, массивы, хеш-таблицы, бинарный поиск)"
-      },
-      {
-        "skill_name": "Работа с базами данных",
-        "additional_info": "(SQL PostgreSQL SQLite)"
-      },
-      {
-        "skill_name": "Системы контроля версий",
-        "additional_info": "(Git: clone, commit, push, pull, GitHub)"
+    {
+      "profession_name": "Инженер (электроника/робототехника)",
+      "status": "pending_graph"
+    },
+    {
+      "profession_name": "Бизнесмен (Tech Entrepreneur)",
+      "status": "pending_graph"
+    },
+    {
+      "profession_name": "Python-программист",
+      "general_recommendations_minigraph": {
+        "hard_skills": [
+          {
+            "skill_name": "Основы синтаксиса Python",
+            "additional_info": "(переменные, циклы, функции, классы, стандарт PEP8)"
+          },
+          {
+            "skill_name": "Алгоритмы и структуры данных",
+            "additional_info": "(оценка сложности Big O, массивы, хеш-таблицы, бинарный поиск)"
+          },
+          {
+            "skill_name": "Работа с базами данных",
+            "additional_info": "(SQL PostgreSQL SQLite)"
+          },
+          {
+            "skill_name": "Системы контроля версий",
+            "additional_info": "(Git: clone, commit, push, pull, GitHub)"
+          }
+        ],
+        "soft_skills": [
+          {
+            "skill_name": "Английский язык",
+            "additional_info": "уровень B1-B2 для свободного чтения технической документации PEP и StackOverflow"
+          },
+          {
+            "skill_name": "Умение искать информацию",
+            "additional_info": "StackOverflow, работа с официальной документацией"
+          },
+          {
+            "skill_name": "Тайм-менеджмент",
+            "additional_info": "навык декомпозиции задач: разбиение одного большого проекта на микро-задачи по 1-2 часа"
+          }
+        ],
+        "first_practical_steps": [
+          "Пройти бесплатный курс на открытых платформах",
+          "Написать Telegram-бота",
+          "Создать парсер данных с веб-сайта"
+        ]
       }
-    ],
-    "soft_skills": [
-      {
-        "skill_name": "Английский язык",
-        "additional_info": "уровень B1-B2 для свободного чтения технической документации PEP и StackOverflow"
-      },
-      {
-        "skill_name": "Умение искать информацию",
-        "additional_info": "StackOverflow, работа с официальной документацией)
-      },
-      {
-        "skill_name": "Тайм-менеджмент (навык декомпозиции задач: разбиение одного большого проекта на микро-задачи по 1-2 часа)",
-        "additional_info": null
-      }
-    ],
-    "first_practical_steps": [
-      "Пройти бесплатный курс на открытых платформах",
-      "Написать Telegram-бота",
-      "Создать парсер данных с веб-сайта"
-    ]
-  }
-}
-            }, 
-            {
+    }
+  ],
   "universities": {
     "dream_tier": [
       {
@@ -111,6 +109,10 @@
               "benefit": "Автоматическое зачисление",
               "details": "Дипломы Республиканской олимпиады школьников по информатике (золото/серебро/бронза)."
             }
+          ]
+        }
+      },
+      {
         "name": "KAIST (Южная Корея)",
         "admission_graph": {
           "exams": [
@@ -188,5 +190,7 @@
         }
       }
     ]
+  }
+}
   }
 }
