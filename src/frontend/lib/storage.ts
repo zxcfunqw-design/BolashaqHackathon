@@ -4,6 +4,7 @@ import type {
   Language,
   LoginInput,
   PortfolioDraft,
+  PortfolioFields,
   QuizAnswers,
   RegisterInput,
   UserAccount,
@@ -15,15 +16,35 @@ const APP_KEY = "qadamgraph:app-json";
 const SESSION_KEY = "qadamgraph:session-token";
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
 
-export const initialPortfolioFields = {
+export const initialPortfolioFields: PortfolioFields = {
+  studentName: "Aruzhan",
+  grade: "9th grade",
+  school: "Rural school in Kazakhstan",
+  careerGoal: "AI engineer",
+  targetUniversity: "Astana IT University",
+  targetProgram: "Computer Science / Artificial Intelligence",
+  academicStrengths: "Math, physics, informatics and English",
   did: "Built a simple Telegram bot idea for school announcements",
   participated: "STEM Hackathon for Rural Schools",
   learned: "Python basics, project planning and explaining a problem",
-  result: "Created a working draft and received teacher feedback"
+  result: "Created a working draft and received teacher feedback",
+  activities: "School coding club, helping classmates with informatics tasks",
+  awards: "Participation certificate from the hackathon",
+  communityImpact: "The bot idea helps students and teachers receive announcements faster with weak internet",
+  evidence: "Hackathon certificate, screenshots of the bot draft, teacher feedback, project description",
+  nextStep: "Improve the prototype and apply to a university engineering program",
+  language: "ru"
 };
 
-export function createPortfolioOutput(fields = initialPortfolioFields) {
-  return `I participated in ${fields.participated} and ${fields.did}. Through this work, I learned ${fields.learned}. As a result, I ${fields.result}. This project shows my interest in technology, engineering and solving practical problems for my community.`;
+export function createPortfolioOutput(fields: PortfolioFields = initialPortfolioFields) {
+  return [
+    `Applicant snapshot: ${fields.studentName}, ${fields.grade}, ${fields.school}. Career goal: ${fields.careerGoal}.`,
+    `Target fit: ${fields.targetProgram} at ${fields.targetUniversity}. Academic strengths: ${fields.academicStrengths}.`,
+    `Evidence highlights: ${fields.did} through ${fields.participated}. Result: ${fields.result}.`,
+    `Activities: ${fields.activities}. Awards/certificates: ${fields.awards}.`,
+    `Project impact: ${fields.communityImpact}. Skills learned: ${fields.learned}.`,
+    `Evidence to attach: ${fields.evidence}. Next step: ${fields.nextStep}.`
+  ].join("\n\n");
 }
 
 function createDefaultUserData(): UserAppData {

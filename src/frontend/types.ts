@@ -37,11 +37,26 @@ export type UserPath = {
   savedAt: string;
 };
 
+export type PortfolioLanguage = "ru" | "kk" | "en";
+
 export type PortfolioFields = {
+  studentName: string;
+  grade: string;
+  school: string;
+  careerGoal: string;
+  targetUniversity: string;
+  targetProgram: string;
+  academicStrengths: string;
   did: string;
   participated: string;
   learned: string;
   result: string;
+  activities: string;
+  awards: string;
+  communityImpact: string;
+  evidence: string;
+  nextStep: string;
+  language: PortfolioLanguage;
 };
 
 export type PortfolioDraft = {
@@ -49,6 +64,9 @@ export type PortfolioDraft = {
   output: string;
   generated: boolean;
   updatedAt: string;
+  source?: "openai" | "local";
+  model?: string;
+  warning?: string;
 };
 
 export type Opportunity = {
