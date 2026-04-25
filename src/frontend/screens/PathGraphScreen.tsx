@@ -1,4 +1,4 @@
-import { ExternalLink, LocateFixed, Minus, Move, Plus } from "lucide-react";
+import { Calculator, ExternalLink, LocateFixed, Minus, Move, Plus, WalletCards } from "lucide-react";
 import { PointerEvent, useMemo, useRef, useState } from "react";
 import {
   graphBoard,
@@ -7,6 +7,12 @@ import {
   type UniversityGraphEdge,
   type UniversityGraphNode
 } from "../data/universityGraph";
+import {
+  calculateFinancialPaths,
+  formatKzt,
+  formatKztCompact,
+  type FinancialPath
+} from "../lib/financialCalculator";
 import type { UserPath } from "../types";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
@@ -56,9 +62,9 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
   const [selectedId, setSelectedId] = useState("you");
   const [dragging, setDragging] = useState(false);
   const [expanded, setExpanded] = useState<ExpandedBranch>({
-    directionId: null,
-    skillId: null,
-    actionId: null
+    directionId: "ai-engineer",
+    skillId: "ai-python",
+    actionId: "ai-bot"
   });
   const lastPointer = useRef({ x: 0, y: 0 });
 
@@ -111,6 +117,29 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
   );
 
   const selectedNode = nodesById.get(selectedId) ?? universityGraphNodes[0];
+  const allFinancialPaths = useMemo(
+    () =>
+      calculateFinancialPaths({
+        nodes: universityGraphNodes,
+        edges: universityGraphEdges,
+        startId: "you"
+      }),
+    []
+  );
+  const selectedFinancialPaths = useMemo(
+    () =>
+      selectedNode.type === "opportunity"
+        ? calculateFinancialPaths({
+            nodes: universityGraphNodes,
+            edges: universityGraphEdges,
+            startId: "you",
+            targetId: selectedNode.id
+          })
+        : [],
+    [selectedNode.id, selectedNode.type]
+  );
+  const selectedFinancialPath = selectedFinancialPaths[0] ?? null;
+  const cheapestPaths = allFinancialPaths.slice(0, 3);
   const activeLayer = Math.max(
     selectedNode.layer,
     expanded.actionId ? 5 : expanded.skillId ? 4 : expanded.directionId ? 3 : 2
@@ -184,7 +213,26 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
 
     if (node.type === "direction") {
       setExpanded({ directionId: node.id, skillId: null, actionId: null });
+      return;
     }
+
+    if (node.type === "skill") {
+      setExpanded((current) => ({ ...current, skillId: node.id, actionId: null }));
+      return;
+    }
+
+    if (node.type === "action") {
+      setExpanded((current) => ({ ...current, actionId: node.id }));
+    }
+  };
+
+  const activateFinancialPath = (financialPath: FinancialPath) => {
+    const directionId = financialPath.steps.find((step) => step.type === "direction")?.nodeId ?? null;
+    const skillId = financialPath.steps.find((step) => step.type === "skill")?.nodeId ?? null;
+    const actionId = financialPath.steps.find((step) => step.type === "action")?.nodeId ?? null;
+
+    setExpanded({ directionId, skillId, actionId });
+    setSelectedId(financialPath.targetId);
   };
 
   return (
@@ -310,6 +358,9 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
                   <span className="rounded-full bg-white/75 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
                     {nodeBadges[node.type]}
                   </span>
+                  <span className="ml-1 rounded-full bg-white/75 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
+                    {formatKztCompact(node.costKzt)}
+                  </span>
                   <strong className="mt-2 block text-sm leading-5">{node.title}</strong>
                   <span className="mt-1 block text-xs leading-4 opacity-75">{node.subtitle}</span>
                 </button>
@@ -322,11 +373,95 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
+            <Badge tone="yellow">DFS finance</Badge>
+            <h3 className="mt-3 text-lg font-black">Financial calculator</h3>
+            <p className="mt-1 text-sm leading-6 text-qadam-muted">
+              Select a university endpoint to calculate the full path cost from the graph.
+            </p>
+          </div>
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700">
+            <Calculator size={20} />
+          </div>
+        </div>
+
+        {selectedFinancialPath ? (
+          <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase text-yellow-800">Selected endpoint</p>
+                <p className="mt-1 text-sm font-bold text-qadam-graphite">
+                  {selectedFinancialPath.targetTitle}
+                </p>
+              </div>
+              <strong className="text-right text-base text-yellow-800">
+                {formatKzt(selectedFinancialPath.totalCostKzt)}
+              </strong>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-qadam-muted">
+              {describeFinancialPath(selectedFinancialPath)}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {selectedFinancialPath.fundingOptions.slice(0, 5).map((option) => (
+                <span
+                  className="rounded-full bg-white px-2 py-1 text-[11px] font-bold text-yellow-900"
+                  key={option}
+                >
+                  {option}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-qadam-border bg-qadam-bg p-3 text-sm leading-6 text-qadam-muted">
+            Current selected node is not a final university. DFS still found {allFinancialPaths.length} full routes
+            from "you" to university endpoints.
+          </div>
+        )}
+
+        <div className="mt-4 border-t border-qadam-border pt-4">
+          <div className="flex items-center gap-2">
+            <WalletCards className="text-qadam-primary" size={18} />
+            <p className="text-sm font-black text-qadam-graphite">Minimum cost options</p>
+          </div>
+          <div className="mt-3 space-y-2">
+            {cheapestPaths.map((financialPath, index) => (
+              <button
+                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-qadam-border bg-white px-3 py-3 text-left transition hover:border-qadam-primary/40"
+                key={financialPath.nodeIds.join("-")}
+                onClick={() => activateFinancialPath(financialPath)}
+                type="button"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-black text-qadam-graphite">
+                    #{index + 1} {financialPath.targetTitle}
+                  </span>
+                  <span className="mt-1 block truncate text-xs font-semibold text-qadam-muted">
+                    {describeFinancialPath(financialPath)}
+                  </span>
+                </span>
+                <strong className="shrink-0 text-sm text-qadam-primary">
+                  {formatKztCompact(financialPath.totalCostKzt)}
+                </strong>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-start justify-between gap-3">
+          <div>
             <Badge tone={selectedNode.type === "action" ? "yellow" : "green"}>
               {nodeBadges[selectedNode.type]}
             </Badge>
             <h3 className="mt-3 text-lg font-black">{selectedNode.title}</h3>
             <p className="mt-1 text-sm font-semibold text-qadam-muted">{selectedNode.subtitle}</p>
+            <p className="mt-2 text-sm font-black text-qadam-primary">
+              Node cost: {formatKzt(selectedNode.costKzt)}
+            </p>
+            {selectedNode.costNote ? (
+              <p className="mt-1 text-xs leading-5 text-qadam-muted">{selectedNode.costNote}</p>
+            ) : null}
           </div>
           {selectedNode.sourceUrl ? (
             <a
@@ -340,6 +475,18 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
             </a>
           ) : null}
         </div>
+        {selectedNode.fundingOptions?.length ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {selectedNode.fundingOptions.map((option) => (
+              <span
+                className="rounded-full bg-qadam-bg px-2 py-1 text-[11px] font-bold text-qadam-primary"
+                key={option}
+              >
+                {option}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <ul className="mt-4 space-y-2">
           {selectedNode.details.map((detail) => (
             <li key={detail} className="rounded-2xl bg-qadam-bg px-3 py-2 text-sm leading-6 text-qadam-graphite">
@@ -436,6 +583,10 @@ function IconButton({ children, label, onClick }: IconButtonProps) {
 
 function getTargets(sourceId: string, outgoingBySource: Map<string, UniversityGraphEdge[]>) {
   return (outgoingBySource.get(sourceId) ?? []).map((edge) => edge.to);
+}
+
+function describeFinancialPath(financialPath: FinancialPath) {
+  return financialPath.steps.map((step) => step.title).join(" -> ");
 }
 
 function mod(value: number, divisor: number) {
