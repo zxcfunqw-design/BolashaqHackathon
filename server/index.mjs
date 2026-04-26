@@ -72,6 +72,12 @@ const defaultUserData = () => ({
     generated: false,
     updatedAt: new Date().toISOString()
   },
+  graphTexts: {},
+  graphExpansion: {
+    nodes: [],
+    edges: [],
+    generatedAt: new Date().toISOString()
+  },
   savedOpportunities: []
 });
 
@@ -287,6 +293,85 @@ function formatScores(values) {
     .join(", ");
 }
 
+function buildGraphTextRequest(body = {}) {
+  return {
+    model: openAiModel,
+    store: false,
+    temperature: 0.4,
+    max_output_tokens: 900,
+    instructions: [
+      "You create concise, practical graph-node explanations for rural school students in Kazakhstan.",
+      "Use selected goals, quiz answers, path data, selected graph node, and university JSON.",
+      "Adapt the text to the student. Keep it simple, realistic, mobile-readable, and supportive.",
+      "Do not invent admission guarantees, scores, grants, or deadlines.",
+      "Return only valid JSON with this shape:",
+      "{\"nodeTitle\":\"string\",\"studentFit\":\"string\",\"whyThisPath\":[\"string\"],\"nextSteps\":[\"string\"],\"universityNotes\":[\"string\"],\"riskNote\":\"string\"}."
+    ].join(" "),
+    input: JSON.stringify(body)
+  };
+}
+
+function buildGraphExpandRequest(body = {}) {
+  return {
+    model: openAiModel,
+    store: false,
+    temperature: 0.45,
+    max_output_tokens: 1400,
+    instructions: [
+      "You expand a career-path graph for rural school students in Kazakhstan.",
+      "Use the selected graph node, student's selected goals, quiz answers, current path, existing graph, and university JSON.",
+      "Suggest 3-5 new graph nodes and 3-6 edges.",
+      "Allowed node types: direction(layer 2), skill(layer 3), action(layer 4), opportunity(layer 5).",
+      "Opportunities may be universities, hackathons, contests, grants, clubs, mini-projects, or portfolio milestones.",
+      "Prefer Kazakhstan-relevant universities and opportunities. If not sure about a deadline, do not invent it.",
+      "Every id must start with ai- and use kebab-case.",
+      "Use x coordinates by layer: layer2 around 250, layer3 around 492, layer4 around 742, layer5 around 986. Use y between 40 and 640.",
+      "Return only valid JSON: {\"nodes\":[{\"id\":\"string\",\"type\":\"skill\",\"layer\":3,\"title\":\"string\",\"subtitle\":\"string\",\"costKzt\":0,\"costNote\":\"string\",\"fundingOptions\":[\"string\"],\"x\":492,\"y\":120,\"details\":[\"string\"],\"sourceUrl\":\"string\",\"sourceLabel\":\"string\"}],\"edges\":[{\"id\":\"string\",\"from\":\"existing-or-new-id\",\"to\":\"new-id\",\"label\":\"string\",\"tone\":\"primary\"}]}."
+    ].join(" "),
+    input: JSON.stringify(body)
+  };
+}
+
+function createGraphTextDraft(rawText) {
+  const parsed = JSON.parse(stripJsonFence(rawText));
+
+  return {
+    nodeTitle: String(parsed.nodeTitle ?? "Path node"),
+    studentFit: String(parsed.studentFit ?? ""),
+    whyThisPath: ensureStringArray(parsed.whyThisPath),
+    nextSteps: ensureStringArray(parsed.nextSteps),
+    universityNotes: ensureStringArray(parsed.universityNotes),
+    riskNote: String(
+      parsed.riskNote ?? "Check current requirements on official university and opportunity pages."
+    ),
+    generatedAt: new Date().toISOString()
+  };
+}
+
+function createGraphExpansionDraft(rawText) {
+  const parsed = JSON.parse(stripJsonFence(rawText));
+
+  return {
+    nodes: Array.isArray(parsed.nodes) ? parsed.nodes : [],
+    edges: Array.isArray(parsed.edges) ? parsed.edges : [],
+    generatedAt: new Date().toISOString()
+  };
+}
+
+function stripJsonFence(text) {
+  return String(text)
+    .trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+function ensureStringArray(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item)).filter(Boolean).slice(0, 5);
+}
+
 function extractOpenAiText(data) {
   if (typeof data?.output_text === "string") return data.output_text.trim();
 
@@ -367,6 +452,94 @@ const server = createServer(async (req, res) => {
         model: openAiModel,
         createdAt: new Date().toISOString()
       });
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/graph-text") {
+      if (!openAiApiKey) {
+        sendError(res, 500, "OpenAI key is not configured");
+        return;
+      }
+
+      const body = await getRequestBody(req);
+
+      if (!body.selectedNode || !body.path || !body.universities) {
+        sendError(res, 400, "Graph context is missing");
+        return;
+      }
+
+      const openAiResponse = await fetch(openAiResponsesUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAiApiKey}`
+        },
+        body: JSON.stringify(buildGraphTextRequest(body))
+      });
+
+      const payload = await openAiResponse.json().catch(() => ({}));
+
+      if (!openAiResponse.ok) {
+        sendError(
+          res,
+          openAiResponse.status,
+          payload?.error?.message ?? `OpenAI request failed with status ${openAiResponse.status}`
+        );
+        return;
+      }
+
+      const text = extractOpenAiText(payload);
+
+      if (!text) {
+        sendError(res, 502, "OpenAI response did not include text output");
+        return;
+      }
+
+      send(res, 200, createGraphTextDraft(text));
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/graph-expand") {
+      if (!openAiApiKey) {
+        sendError(res, 500, "OpenAI key is not configured");
+        return;
+      }
+
+      const body = await getRequestBody(req);
+
+      if (!body.selectedNode || !body.path || !body.existingNodes || !body.existingEdges) {
+        sendError(res, 400, "Graph expansion context is missing");
+        return;
+      }
+
+      const openAiResponse = await fetch(openAiResponsesUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAiApiKey}`
+        },
+        body: JSON.stringify(buildGraphExpandRequest(body))
+      });
+
+      const payload = await openAiResponse.json().catch(() => ({}));
+
+      if (!openAiResponse.ok) {
+        sendError(
+          res,
+          openAiResponse.status,
+          payload?.error?.message ?? `OpenAI request failed with status ${openAiResponse.status}`
+        );
+        return;
+      }
+
+      const text = extractOpenAiText(payload);
+
+      if (!text) {
+        sendError(res, 502, "OpenAI response did not include text output");
+        return;
+      }
+
+      send(res, 200, createGraphExpansionDraft(text));
       return;
     }
 

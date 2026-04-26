@@ -8,6 +8,8 @@ import {
   refreshCurrentUserFromBackend,
   refreshSavedPath,
   updateDesiredPath,
+  updateGraphExpansion,
+  updateGraphText,
   updatePortfolio,
   updateQuizAnswers,
   updateSavedOpportunities,
@@ -16,6 +18,8 @@ import {
 } from "./lib/storage";
 import type {
   DesiredPath,
+  GeneratedGraphExpansion,
+  GraphAiText,
   Language,
   MainTab,
   PortfolioDraft,
@@ -127,6 +131,16 @@ export function App() {
     if (updated) setCurrentUser(updated);
   };
 
+  const handleGraphTextGenerated = (nodeId: string, graphText: GraphAiText) => {
+    const updated = updateGraphText(nodeId, graphText);
+    if (updated) setCurrentUser(updated);
+  };
+
+  const handleGraphExpanded = (graphExpansion: GeneratedGraphExpansion) => {
+    const updated = updateGraphExpansion(graphExpansion);
+    if (updated) setCurrentUser(updated);
+  };
+
   const handleAccountSwitch = () => {
     logoutUser();
     setCurrentUser(null);
@@ -190,8 +204,15 @@ export function App() {
       return (
         <PathGraphScreen
           desiredPath={currentUser?.data.desiredPath ?? null}
+          graphExpansion={currentUser?.data.graphExpansion}
+          graphTexts={currentUser?.data.graphTexts ?? {}}
+          language={language}
           onDesiredPathChange={handleDesiredPathChange}
+          onGraphExpanded={handleGraphExpanded}
+          onGraphTextGenerated={handleGraphTextGenerated}
           path={path}
+          quizAnswers={currentUser?.data.quizAnswers ?? {}}
+          selectedGoals={selectedGoals}
         />
       );
     }

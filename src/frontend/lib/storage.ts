@@ -2,6 +2,8 @@ import { mockUserPath } from "../data/path";
 import type {
   AppJsonState,
   DesiredPath,
+  GeneratedGraphExpansion,
+  GraphAiText,
   Language,
   LoginInput,
   PortfolioDraft,
@@ -61,6 +63,12 @@ function createDefaultUserData(): UserAppData {
       output: createPortfolioOutput(initialPortfolioFields),
       generated: false,
       updatedAt: new Date().toISOString()
+    },
+    graphTexts: {},
+    graphExpansion: {
+      nodes: [],
+      edges: [],
+      generatedAt: new Date().toISOString()
     },
     savedOpportunities: []
   };
@@ -289,6 +297,29 @@ export function updateSavedOpportunities(savedOpportunities: string[]) {
     data: {
       ...user.data,
       savedOpportunities
+    }
+  }));
+}
+
+export function updateGraphText(nodeId: string, graphText: GraphAiText) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      graphTexts: {
+        ...(user.data.graphTexts ?? {}),
+        [nodeId]: graphText
+      }
+    }
+  }));
+}
+
+export function updateGraphExpansion(graphExpansion: GeneratedGraphExpansion) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      graphExpansion
     }
   }));
 }
