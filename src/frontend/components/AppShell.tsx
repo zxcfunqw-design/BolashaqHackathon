@@ -1,7 +1,10 @@
+import { MoonStar, SunMedium } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import type { MainTab } from "../types";
 import { BottomNav } from "./BottomNav";
 import { OfflineBadge } from "./OfflineBadge";
+
+type ThemeMode = "light" | "dark";
 
 type AppShellProps = PropsWithChildren<{
   online: boolean;
@@ -9,6 +12,8 @@ type AppShellProps = PropsWithChildren<{
   onTabChange?: (tab: MainTab) => void;
   accountName?: string;
   onAccountSwitch?: () => void;
+  onThemeToggle: () => void;
+  themeMode: ThemeMode;
   title?: string;
   showNav?: boolean;
 }>;
@@ -20,9 +25,13 @@ export function AppShell({
   onTabChange,
   accountName,
   onAccountSwitch,
+  onThemeToggle,
+  themeMode,
   title = "QadamGraph",
   showNav = false
 }: AppShellProps) {
+  const themeLabel = themeMode === "dark" ? "Light" : "Dark";
+
   return (
     <div className="min-h-screen bg-qadam-bg text-qadam-graphite">
       <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col border-x border-qadam-border/70 bg-qadam-bg">
@@ -36,20 +45,31 @@ export function AppShell({
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2">
               <OfflineBadge online={online} />
-              {accountName && onAccountSwitch ? (
+              <div className="flex items-center gap-2">
                 <button
-                  className="min-h-8 rounded-full border border-qadam-border bg-white px-3 text-xs font-bold text-qadam-primary"
-                  onClick={onAccountSwitch}
+                  aria-label={themeMode === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+                  className="inline-flex min-h-8 items-center gap-2 rounded-full border border-qadam-border bg-qadam-card px-3 text-xs font-bold text-qadam-primary"
+                  onClick={onThemeToggle}
                   type="button"
                 >
-                  Account
+                  {themeMode === "dark" ? <SunMedium size={14} /> : <MoonStar size={14} />}
+                  {themeLabel}
                 </button>
-              ) : null}
+                {accountName && onAccountSwitch ? (
+                  <button
+                    className="min-h-8 rounded-full border border-qadam-border bg-qadam-card px-3 text-xs font-bold text-qadam-primary"
+                    onClick={onAccountSwitch}
+                    type="button"
+                  >
+                    Account
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
           {!online ? (
             <p className="mt-2 text-xs font-medium text-qadam-muted">
-              Интернет жоқ, бірақ жолың сақталған
+              You are offline, but your path stays saved on this device.
             </p>
           ) : null}
         </header>

@@ -53,10 +53,10 @@ const nodeSize = {
 
 const nodeStyles: Record<UniversityGraphNode["type"], string> = {
   student: "border-qadam-primary bg-qadam-primary text-white",
-  direction: "border-blue-200 bg-blue-50 text-blue-950",
-  skill: "border-teal-200 bg-teal-50 text-teal-950",
-  action: "border-yellow-200 bg-yellow-50 text-yellow-950",
-  opportunity: "border-emerald-200 bg-white text-qadam-graphite"
+  direction: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-500/30 dark:bg-blue-500/12 dark:text-blue-100",
+  skill: "border-teal-200 bg-teal-50 text-teal-950 dark:border-teal-500/30 dark:bg-teal-500/12 dark:text-teal-100",
+  action: "border-yellow-200 bg-yellow-50 text-yellow-950 dark:border-yellow-500/30 dark:bg-yellow-500/14 dark:text-yellow-100",
+  opportunity: "border-emerald-200 bg-qadam-card text-qadam-graphite dark:border-emerald-500/30 dark:bg-emerald-500/10"
 };
 
 const nodeBadges: Record<UniversityGraphNode["type"], string> = {
@@ -356,8 +356,8 @@ export function PathGraphScreen({
         </p>
       </section>
 
-      <div className="overflow-hidden rounded-[26px] border border-qadam-border bg-white shadow-soft">
-        <div className="flex items-center justify-between gap-2 border-b border-qadam-border bg-slate-50 px-3 py-2">
+      <div className="overflow-hidden rounded-[26px] border border-qadam-border bg-qadam-card shadow-soft">
+        <div className="flex items-center justify-between gap-2 border-b border-qadam-border bg-qadam-bg px-3 py-2">
           <div className="flex items-center gap-2 text-xs font-bold text-qadam-muted">
             <Move size={15} />
             Layer {activeLayer}/5
@@ -376,7 +376,7 @@ export function PathGraphScreen({
         </div>
 
         <div
-          className={`relative h-[62vh] min-h-[420px] max-h-[660px] touch-none overflow-hidden bg-white ${
+          className={`relative h-[62vh] min-h-[420px] max-h-[660px] touch-none overflow-hidden bg-qadam-card ${
             dragging ? "cursor-grabbing" : "cursor-grab"
           }`}
           onPointerDown={startPan}
@@ -463,10 +463,10 @@ export function PathGraphScreen({
                   onClick={() => handleNodeClick(node)}
                   type="button"
                 >
-                  <span className="rounded-full bg-white/75 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
+                  <span className="rounded-full bg-qadam-card/80 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
                     {nodeBadges[node.type]}
                   </span>
-                  <span className="ml-1 rounded-full bg-white/75 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
+                  <span className="ml-1 rounded-full bg-qadam-card/80 px-2 py-0.5 text-[11px] font-black text-qadam-primary">
                     {formatKztCompact(node.costKzt)}
                   </span>
                   <strong className="mt-2 block text-sm leading-5">{node.title}</strong>
@@ -539,7 +539,7 @@ export function PathGraphScreen({
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedFinancialPath.fundingOptions.slice(0, 5).map((option) => (
                 <span
-                  className="rounded-full bg-white px-2 py-1 text-[11px] font-bold text-yellow-900"
+                className="rounded-full bg-qadam-card px-2 py-1 text-[11px] font-bold text-yellow-900 dark:text-yellow-100"
                   key={option}
                 >
                   {option}
@@ -572,7 +572,7 @@ export function PathGraphScreen({
           <div className="mt-3 space-y-2">
             {cheapestPaths.map((financialPath, index) => (
               <button
-                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-qadam-border bg-white px-3 py-3 text-left transition hover:border-qadam-primary/40"
+                className="flex w-full items-center justify-between gap-3 rounded-2xl border border-qadam-border bg-qadam-card px-3 py-3 text-left transition hover:border-qadam-primary/40"
                 key={financialPath.nodeIds.join("-")}
                 onClick={() => activateFinancialPath(financialPath)}
                 type="button"
@@ -779,7 +779,7 @@ function IconButton({ children, label, onClick }: IconButtonProps) {
   return (
     <button
       aria-label={label}
-      className="grid min-h-10 min-w-10 place-items-center rounded-2xl border border-qadam-border bg-white text-qadam-primary"
+      className="grid min-h-10 min-w-10 place-items-center rounded-2xl border border-qadam-border bg-qadam-card text-qadam-primary"
       onClick={onClick}
       title={label}
       type="button"

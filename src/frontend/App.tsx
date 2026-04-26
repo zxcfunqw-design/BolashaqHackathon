@@ -43,11 +43,15 @@ import { QuizScreen } from "./screens/QuizScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 
 type FlowStep = "auth" | "welcome" | "goals" | "quiz" | "holland" | "loading" | "app";
+type ThemeMode = "light" | "dark";
+
+const THEME_STORAGE_KEY = "qadamgraph:theme";
 
 export function App() {
   const online = useOnlineStatus();
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getCurrentUser());
   const [language, setLanguage] = useState<Language>(() => currentUser?.language ?? "kk");
+  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialTheme);
   const [flowStep, setFlowStep] = useState<FlowStep>(() => {
     if (!currentUser) return "auth";
     return currentUser.data.onboardingCompleted ? "app" : "welcome";
@@ -78,6 +82,12 @@ export function App() {
       .catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", themeMode === "dark");
+    document.documentElement.style.colorScheme = themeMode;
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+  }, [themeMode]);
+
   const handleAuth = (user: UserAccount) => {
     setCurrentUser(user);
     setLanguage(user.language);
@@ -91,6 +101,10 @@ export function App() {
     setLanguage(nextLanguage);
     const updated = updateUserLanguage(nextLanguage);
     if (updated) setCurrentUser(updated);
+  };
+
+  const handleThemeToggle = () => {
+    setThemeMode((current) => (current === "dark" ? "light" : "dark"));
   };
 
   const toggleGoal = (id: string) => {
@@ -278,6 +292,8 @@ export function App() {
       onTabChange={setActiveTab}
       accountName={currentUser?.name}
       onAccountSwitch={currentUser ? handleAccountSwitch : undefined}
+      onThemeToggle={handleThemeToggle}
+      themeMode={themeMode}
       showNav={flowStep === "app"}
     >
       {renderContent()}
@@ -295,6 +311,15 @@ function tabTitle(tab: MainTab) {
   };
 
   return titles[tab];
+}
+
+function getInitialTheme(): ThemeMode {
+  if (typeof window === "undefined") return "light";
+
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function createPortfolioContext(user: UserAccount): PortfolioGenerationContext {

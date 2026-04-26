@@ -66,7 +66,7 @@ export function AuthScreen({ onAuth }: AuthScreenProps) {
           <div className="grid grid-cols-2 gap-2 rounded-2xl bg-qadam-bg p-1">
             <button
               className={`min-h-11 rounded-xl text-sm font-bold transition ${
-                isRegister ? "bg-white text-qadam-primary shadow-soft" : "text-qadam-muted"
+                isRegister ? "bg-qadam-card text-qadam-primary shadow-soft" : "text-qadam-muted"
               }`}
               onClick={() => setMode("register")}
               type="button"
@@ -75,7 +75,7 @@ export function AuthScreen({ onAuth }: AuthScreenProps) {
             </button>
             <button
               className={`min-h-11 rounded-xl text-sm font-bold transition ${
-                !isRegister ? "bg-white text-qadam-primary shadow-soft" : "text-qadam-muted"
+                !isRegister ? "bg-qadam-card text-qadam-primary shadow-soft" : "text-qadam-muted"
               }`}
               onClick={() => setMode("login")}
               type="button"

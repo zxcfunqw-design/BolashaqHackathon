@@ -15,7 +15,7 @@ export function Card({
   "data-testid": testId
 }: CardProps) {
   const base =
-    "rounded-[22px] border bg-white p-4 shadow-soft transition active:scale-[0.99]";
+    "rounded-[22px] border bg-qadam-card p-4 shadow-soft transition active:scale-[0.99]";
   const state = selected ? "border-qadam-primary ring-2 ring-qadam-primary/15" : "border-qadam-border";
   const clickable = onClick ? "cursor-pointer" : "";
 

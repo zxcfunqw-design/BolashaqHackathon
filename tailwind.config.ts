@@ -2,19 +2,20 @@ import type { Config } from "tailwindcss";
 
 export default {
   content: ["./index.html", "./src/frontend/**/*.{ts,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         qadam: {
-          bg: "#F8FAF7",
-          card: "#FFFFFF",
-          primary: "#0F766E",
-          primaryDark: "#0B5F58",
+          bg: "rgb(var(--color-bg) / <alpha-value>)",
+          card: "rgb(var(--color-card) / <alpha-value>)",
+          primary: "rgb(var(--color-primary) / <alpha-value>)",
+          primaryDark: "rgb(var(--color-primary-dark) / <alpha-value>)",
           blue: "#2563EB",
           yellow: "#F2C94C",
-          graphite: "#1F2933",
-          muted: "#64748B",
-          border: "#DDE7E1"
+          graphite: "rgb(var(--color-text) / <alpha-value>)",
+          muted: "rgb(var(--color-muted) / <alpha-value>)",
+          border: "rgb(var(--color-border) / <alpha-value>)"
         }
       },
       boxShadow: {
