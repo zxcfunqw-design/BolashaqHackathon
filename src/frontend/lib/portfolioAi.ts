@@ -9,10 +9,10 @@ export type GeneratedPortfolioDraft = {
 };
 
 const DEFAULT_OPENAI_MODEL = "gpt-5.2";
-const DEFAULT_PORTFOLIO_API_URL = import.meta.env.DEV
+const DEFAULT_PORTFOLIO_API_URL = import.meta.env?.DEV
   ? "http://127.0.0.1:8787/api/portfolio"
   : "/api/portfolio";
-const PORTFOLIO_API_URL = import.meta.env.VITE_PORTFOLIO_API_URL ?? DEFAULT_PORTFOLIO_API_URL;
+const PORTFOLIO_API_URL = import.meta.env?.VITE_PORTFOLIO_API_URL ?? DEFAULT_PORTFOLIO_API_URL;
 
 const languageName: Record<PortfolioLanguage, string> = {
   ru: "Russian",

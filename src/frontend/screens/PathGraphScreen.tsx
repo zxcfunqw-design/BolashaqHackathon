@@ -1,4 +1,4 @@
-import { Calculator, ExternalLink, LocateFixed, Minus, Move, Plus, Sparkles, WandSparkles, WalletCards } from "lucide-react";
+import { Calculator, CheckCircle2, ExternalLink, LocateFixed, Minus, Move, Plus, Sparkles, WandSparkles, WalletCards } from "lucide-react";
 import { PointerEvent, useMemo, useRef, useState } from "react";
 import {
   graphBoard,
@@ -15,12 +15,18 @@ import {
 } from "../lib/financialCalculator";
 import { expandGraphWithAi } from "../lib/graphExpand";
 import { generateGraphText } from "../lib/graphAi";
+import { generateActionPlan } from "../lib/actionPlanAi";
+import { generatePersonalizedGraphForUser } from "../lib/personalizedGraph";
 import type {
   DesiredPath,
   GeneratedGraphExpansion,
   GraphAiText,
+  ImplementationPlan,
   Language,
+  PersonalizedGraph,
+  PersonalizedGraphNode,
   QuizAnswers,
+  UserAccount,
   UserPath
 } from "../types";
 import { Badge } from "../components/ui/Badge";
@@ -28,15 +34,20 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 
 type PathGraphScreenProps = {
+  actionPlans: Record<string, ImplementationPlan>;
   desiredPath?: DesiredPath | null;
   onDesiredPathChange?: (desiredPath: DesiredPath | null) => void;
   graphExpansion?: GeneratedGraphExpansion;
   graphTexts: Record<string, GraphAiText>;
   language: Language;
   path: UserPath;
+  personalizedGraph?: PersonalizedGraph;
   quizAnswers: QuizAnswers;
   selectedGoals: string[];
+  user: UserAccount | null;
+  onActionPlanGenerated: (nodeId: string, actionPlan: ImplementationPlan) => void;
   onGraphExpanded: (graphExpansion: GeneratedGraphExpansion) => void;
+  onPersonalizedGraphGenerated: (personalizedGraph: PersonalizedGraph) => void;
   onGraphTextGenerated: (nodeId: string, graphText: GraphAiText) => void;
 };
 
@@ -76,15 +87,20 @@ const edgeColors: Record<NonNullable<UniversityGraphEdge["tone"]>, string> = {
 };
 
 export function PathGraphScreen({
+  actionPlans,
   desiredPath,
   graphExpansion,
   graphTexts,
   language,
   onDesiredPathChange,
   path,
+  personalizedGraph,
   quizAnswers,
   selectedGoals,
+  user,
+  onActionPlanGenerated,
   onGraphExpanded,
+  onPersonalizedGraphGenerated,
   onGraphTextGenerated
 }: PathGraphScreenProps) {
   const initialNodeIds = desiredPath?.nodeIds ?? path.recommendedGraphNodeIds ?? [
@@ -102,15 +118,32 @@ export function PathGraphScreen({
   const [aiError, setAiError] = useState("");
   const [expandBusy, setExpandBusy] = useState(false);
   const [expandError, setExpandError] = useState("");
+  const [regenerateBusy, setRegenerateBusy] = useState(false);
+  const [regenerateError, setRegenerateError] = useState("");
+  const [planBusy, setPlanBusy] = useState(false);
+  const [planError, setPlanError] = useState("");
   const [expanded, setExpanded] = useState<ExpandedBranch>(() => getExpandedFromNodeIds(initialNodeIds));
   const lastPointer = useRef({ x: 0, y: 0 });
+  const baseGraph = useMemo<{ nodes: PersonalizedGraphNode[]; edges: UniversityGraphEdge[] }>(
+    () =>
+      isValidPersonalizedGraph(personalizedGraph)
+        ? {
+            nodes: personalizedGraph.nodes,
+            edges: personalizedGraph.edges
+          }
+        : {
+            nodes: universityGraphNodes,
+            edges: universityGraphEdges
+          },
+    [personalizedGraph]
+  );
   const graphNodes = useMemo(
-    () => mergeNodes(universityGraphNodes, graphExpansion?.nodes ?? []),
-    [graphExpansion?.nodes]
+    () => mergeNodes(baseGraph.nodes, graphExpansion?.nodes ?? []),
+    [baseGraph.nodes, graphExpansion?.nodes]
   );
   const graphEdges = useMemo(
-    () => mergeEdges(universityGraphEdges, graphExpansion?.edges ?? []),
-    [graphExpansion?.edges]
+    () => mergeEdges(baseGraph.edges, graphExpansion?.edges ?? []),
+    [baseGraph.edges, graphExpansion?.edges]
   );
 
   const nodesById = useMemo(
@@ -167,6 +200,7 @@ export function PathGraphScreen({
 
   const selectedNode = nodesById.get(selectedId) ?? graphNodes[0];
   const selectedGraphText = graphTexts[selectedNode.id];
+  const selectedActionPlan = actionPlans[selectedNode.id] ?? selectedNode.implementation;
   const allFinancialPaths = useMemo(
     () =>
       calculateFinancialPaths({
@@ -343,6 +377,49 @@ export function PathGraphScreen({
     }
   };
 
+  const handleRegenerateGraph = async () => {
+    if (!user) return;
+    if (!window.confirm("Regenerate your personal graph from your current profile and quiz answers?")) return;
+
+    setRegenerateBusy(true);
+    setRegenerateError("");
+
+    try {
+      const nextGraph = await generatePersonalizedGraphForUser(user);
+      onPersonalizedGraphGenerated(nextGraph);
+      onGraphExpanded({ nodes: [], edges: [], generatedAt: new Date().toISOString() });
+      setSelectedId("you");
+      const firstDirection = nextGraph.edges.find((edge) => edge.from === "you")?.to ?? null;
+      setExpanded({ directionId: firstDirection, skillId: null, actionId: null });
+    } catch (error) {
+      setRegenerateError(error instanceof Error ? error.message : "Graph regeneration failed.");
+    } finally {
+      setRegenerateBusy(false);
+    }
+  };
+
+  const handleGenerateActionPlan = async () => {
+    if (selectedNode.type !== "action") return;
+
+    setPlanBusy(true);
+    setPlanError("");
+
+    try {
+      const actionPlan = await generateActionPlan({
+        language,
+        path,
+        quizAnswers,
+        selectedGoals,
+        selectedNode
+      });
+      onActionPlanGenerated(selectedNode.id, actionPlan);
+    } catch (error) {
+      setPlanError(error instanceof Error ? error.message : "Action plan generation failed.");
+    } finally {
+      setPlanBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <section>
@@ -351,9 +428,22 @@ export function PathGraphScreen({
           <Badge tone="blue">{Math.round(scale * 100)}%</Badge>
         </div>
         <h2 className="mt-3 text-2xl font-black">Path canvas</h2>
+        {isValidPersonalizedGraph(personalizedGraph) ? (
+          <p className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-bold text-qadam-primary">
+            Your personal path is ready.
+          </p>
+        ) : null}
         <p className="mt-2 text-sm leading-6 text-qadam-muted">
           {`${path.summary}: you -> direction -> skill -> action -> university.`}
         </p>
+        <Button className="mt-4" disabled={regenerateBusy || !user} onClick={handleRegenerateGraph} variant="secondary">
+          {regenerateBusy ? "Regenerating..." : "Regenerate my graph"}
+        </Button>
+        {regenerateError ? (
+          <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            {regenerateError}
+          </p>
+        ) : null}
       </section>
 
       <div className="overflow-hidden rounded-[26px] border border-qadam-border bg-qadam-card shadow-soft">
@@ -642,6 +732,39 @@ export function PathGraphScreen({
         </ul>
       </Card>
 
+      {selectedNode.type === "action" ? (
+        <Card>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <Badge tone="yellow">Implementation</Badge>
+              <h3 className="mt-3 text-lg font-black">Action execution plan</h3>
+              <p className="mt-1 text-sm leading-6 text-qadam-muted">
+                Concrete steps for doing this action, collecting proof, and turning it into portfolio evidence.
+              </p>
+            </div>
+            <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700">
+              <CheckCircle2 size={20} />
+            </div>
+          </div>
+
+          <Button className="mt-4" disabled={planBusy} fullWidth onClick={handleGenerateActionPlan}>
+            {planBusy
+              ? "Generating plan..."
+              : selectedActionPlan
+                ? "Refresh step-by-step plan"
+                : "Get step-by-step plan"}
+          </Button>
+
+          {planError ? (
+            <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+              {planError}
+            </p>
+          ) : null}
+
+          {selectedActionPlan ? <ImplementationPlanView plan={selectedActionPlan} /> : null}
+        </Card>
+      ) : null}
+
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -687,6 +810,108 @@ export function PathGraphScreen({
         ) : null}
       </Card>
     </div>
+  );
+}
+
+function ImplementationPlanView({ plan }: { plan: ImplementationPlan }) {
+  return (
+    <div className="mt-4 space-y-4">
+      <section className="rounded-2xl bg-qadam-bg px-3 py-3">
+        <p className="text-xs font-black uppercase text-qadam-primary">Overview</p>
+        <h4 className="mt-2 text-base font-black text-qadam-graphite">{plan.goal}</h4>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-2xl bg-white px-3 py-2">
+            <span className="block text-xs font-bold uppercase text-qadam-muted">Time</span>
+            <strong>{plan.estimatedTime}</strong>
+          </div>
+          <div className="rounded-2xl bg-white px-3 py-2">
+            <span className="block text-xs font-bold uppercase text-qadam-muted">Difficulty</span>
+            <strong className="capitalize">{plan.difficulty}</strong>
+          </div>
+        </div>
+        <PlanList title="Required people" items={plan.requiredPeople} />
+        <PlanList title="Required materials" items={plan.requiredMaterials} />
+        <PlanList title="Next 7 days" items={plan.next7Days} />
+      </section>
+
+      <section>
+        <p className="text-xs font-black uppercase text-qadam-primary">Step-by-step plan</p>
+        <div className="mt-2 space-y-3">
+          {plan.steps.map((step, index) => (
+            <article className="rounded-2xl border border-qadam-border bg-white px-3 py-3" key={`${step.title}-${index}`}>
+              <div className="flex items-start gap-3">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-qadam-primary text-xs font-black text-white">
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-black text-qadam-graphite">{step.title}</h4>
+                  <dl className="mt-2 space-y-2 text-sm leading-6">
+                    <PlanDefinition label="What to do" value={step.whatToDo} />
+                    <PlanDefinition label="Who to talk to" value={step.whoToTalkTo} />
+                    <PlanDefinition label="Expected output" value={step.expectedOutput} />
+                    <PlanDefinition label="Time estimate" value={step.timeEstimate} />
+                  </dl>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className="text-xs font-black uppercase text-qadam-primary">Checklist</p>
+        <ul className="mt-2 space-y-2">
+          {plan.checklist.map((item) => (
+            <li className="flex gap-2 rounded-2xl bg-qadam-bg px-3 py-2 text-sm leading-6" key={item}>
+              <CheckCircle2 className="mt-0.5 shrink-0 text-qadam-primary" size={18} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <PlanList title="Portfolio evidence" items={plan.evidenceForPortfolio} />
+      <PlanList title="Risks" items={plan.risks} tone="warning" />
+    </div>
+  );
+}
+
+function PlanDefinition({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-black uppercase text-qadam-muted">{label}</dt>
+      <dd className="text-qadam-graphite">{value}</dd>
+    </div>
+  );
+}
+
+function PlanList({
+  items,
+  title,
+  tone = "default"
+}: {
+  items: string[];
+  title: string;
+  tone?: "default" | "warning";
+}) {
+  if (!items.length) return null;
+
+  return (
+    <section className="mt-3">
+      <p className="text-xs font-black uppercase text-qadam-primary">{title}</p>
+      <ul className="mt-2 space-y-2">
+        {items.map((item) => (
+          <li
+            className={`rounded-2xl px-3 py-2 text-sm leading-6 ${
+              tone === "warning" ? "bg-yellow-50 text-yellow-900" : "bg-qadam-bg text-qadam-graphite"
+            }`}
+            key={item}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -842,6 +1067,12 @@ function describeFinancialPath(financialPath: FinancialPath) {
 
 function mod(value: number, divisor: number) {
   return ((value % divisor) + divisor) % divisor;
+}
+
+function isValidPersonalizedGraph(graph: PersonalizedGraph | undefined): graph is PersonalizedGraph {
+  if (!graph?.nodes?.length || !graph.edges?.length) return false;
+  const ids = new Set(graph.nodes.map((node) => node.id));
+  return ids.has("you") && graph.edges.some((edge) => ids.has(edge.from) && ids.has(edge.to));
 }
 
 function mergeNodes<T extends { id: string }>(base: T[], additions: T[]) {

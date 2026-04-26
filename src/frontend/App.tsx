@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "./components/AppShell";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { generatePersonalizedGraphForUser } from "./lib/personalizedGraph";
 import {
   getCurrentUser,
   loadUserPath,
@@ -8,9 +9,11 @@ import {
   refreshCurrentUserFromBackend,
   refreshSavedPath,
   updateDesiredPath,
+  updateActionPlan,
   updateGraphExpansion,
   updateGraphText,
   updateHollandResult,
+  updatePersonalizedGraph,
   updatePortfolio,
   updateQuizAnswers,
   updateSavedOpportunities,
@@ -22,8 +25,10 @@ import type {
   GeneratedGraphExpansion,
   GraphAiText,
   HollandResult,
+  ImplementationPlan,
   Language,
   MainTab,
+  PersonalizedGraph,
   PortfolioDraft,
   PortfolioGenerationContext,
   QuizAnswers,
@@ -57,6 +62,7 @@ export function App() {
     return currentUser.data.onboardingCompleted ? "app" : "welcome";
   });
   const [activeTab, setActiveTab] = useState<MainTab>("home");
+  const [readyMessage, setReadyMessage] = useState("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>(
     () => currentUser?.data.selectedGoals ?? []
   );
@@ -95,6 +101,7 @@ export function App() {
     setPath(user.data.path);
     setFlowStep(user.data.onboardingCompleted ? "app" : "welcome");
     setActiveTab("home");
+    setReadyMessage("");
   };
 
   const handleLanguageChange = (nextLanguage: Language) => {
@@ -127,7 +134,25 @@ export function App() {
     updateHollandResult(hollandResult);
     const nextPath = refreshSavedPath();
     setPath(nextPath);
-    syncCurrentUser();
+    void buildInitialGraphFromDiagnostic();
+  };
+
+  const buildInitialGraphFromDiagnostic = async () => {
+    const userSnapshot = syncCurrentUser();
+    if (!userSnapshot) {
+      setFlowStep("app");
+      return;
+    }
+
+    try {
+      const personalizedGraph = await generatePersonalizedGraphForUser(userSnapshot);
+      const updated = updatePersonalizedGraph(personalizedGraph);
+      if (updated) setCurrentUser(updated);
+    } finally {
+      setReadyMessage("Your personal path is ready.");
+      setFlowStep("app");
+      setActiveTab("path");
+    }
   };
 
   const handlePortfolioChange = (portfolio: PortfolioDraft) => {
@@ -159,8 +184,18 @@ export function App() {
     if (updated) setCurrentUser(updated);
   };
 
+  const handleActionPlanGenerated = (nodeId: string, actionPlan: ImplementationPlan) => {
+    const updated = updateActionPlan(nodeId, actionPlan);
+    if (updated) setCurrentUser(updated);
+  };
+
   const handleGraphExpanded = (graphExpansion: GeneratedGraphExpansion) => {
     const updated = updateGraphExpansion(graphExpansion);
+    if (updated) setCurrentUser(updated);
+  };
+
+  const handlePersonalizedGraphGenerated = (personalizedGraph: PersonalizedGraph) => {
+    const updated = updatePersonalizedGraph(personalizedGraph);
     if (updated) setCurrentUser(updated);
   };
 
@@ -171,18 +206,8 @@ export function App() {
     setPath(loadUserPath());
     setFlowStep("auth");
     setActiveTab("home");
+    setReadyMessage("");
   };
-
-  useEffect(() => {
-    if (flowStep !== "loading") return;
-
-    const timer = window.setTimeout(() => {
-      setFlowStep("app");
-      setActiveTab("home");
-    }, 1400);
-
-    return () => window.clearTimeout(timer);
-  }, [flowStep]);
 
   const renderContent = () => {
     if (flowStep === "auth") {
@@ -236,16 +261,21 @@ export function App() {
     if (activeTab === "path") {
       return (
         <PathGraphScreen
+          actionPlans={currentUser?.data.actionPlans ?? {}}
           desiredPath={currentUser?.data.desiredPath ?? null}
           graphExpansion={currentUser?.data.graphExpansion}
           graphTexts={currentUser?.data.graphTexts ?? {}}
           language={language}
+          onActionPlanGenerated={handleActionPlanGenerated}
           onDesiredPathChange={handleDesiredPathChange}
           onGraphExpanded={handleGraphExpanded}
+          onPersonalizedGraphGenerated={handlePersonalizedGraphGenerated}
           onGraphTextGenerated={handleGraphTextGenerated}
           path={path}
+          personalizedGraph={currentUser?.data.personalizedGraph}
           quizAnswers={currentUser?.data.quizAnswers ?? {}}
           selectedGoals={selectedGoals}
+          user={currentUser}
         />
       );
     }
@@ -274,7 +304,9 @@ export function App() {
       <HomeScreen
         desiredPath={currentUser.data.desiredPath ?? null}
         path={path}
+        personalizedGraph={currentUser.data.personalizedGraph}
         portfolioContext={portfolioContext}
+        readyMessage={readyMessage}
         user={currentUser}
         onNavigate={setActiveTab}
         onRetakeDiagnostic={() => setFlowStep("quiz")}

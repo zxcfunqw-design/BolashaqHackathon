@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { UniversityGraphEdge, UniversityGraphNode } from "./data/universityGraph";
 
 export type Language = "kk" | "ru";
 
@@ -140,6 +141,45 @@ export type GraphAiText = {
   generatedAt: string;
 };
 
+export type ImplementationPlanStep = {
+  title: string;
+  whatToDo: string;
+  whoToTalkTo: string;
+  expectedOutput: string;
+  timeEstimate: string;
+};
+
+export type ImplementationPlan = {
+  goal: string;
+  estimatedTime: string;
+  difficulty: "easy" | "medium" | "hard";
+  steps: ImplementationPlanStep[];
+  checklist: string[];
+  requiredPeople: string[];
+  requiredMaterials: string[];
+  risks: string[];
+  evidenceForPortfolio: string[];
+  next7Days: string[];
+  generatedAt: string;
+};
+
+export type PersonalizedGraphNode = UniversityGraphNode & {
+  implementation?: ImplementationPlan;
+};
+
+export type PersonalizedGraph = {
+  nodes: PersonalizedGraphNode[];
+  edges: UniversityGraphEdge[];
+  generatedAt: string;
+  basedOn: {
+    grade: string;
+    region: string;
+    language: string;
+    selectedGoals: string[];
+    quizAnswers: Record<string, string>;
+  };
+};
+
 export type GeneratedGraphNode = {
   id: string;
   type: "direction" | "skill" | "action" | "opportunity";
@@ -191,7 +231,9 @@ export type UserAppData = {
   desiredPath?: DesiredPath | null;
   portfolio: PortfolioDraft;
   graphTexts: Record<string, GraphAiText>;
+  actionPlans: Record<string, ImplementationPlan>;
   graphExpansion: GeneratedGraphExpansion;
+  personalizedGraph?: PersonalizedGraph;
   savedOpportunities: string[];
 };
 

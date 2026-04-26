@@ -4,8 +4,10 @@ import type {
   DesiredPath,
   GeneratedGraphExpansion,
   GraphAiText,
+  ImplementationPlan,
   Language,
   LoginInput,
+  PersonalizedGraph,
   PortfolioDraft,
   PortfolioFields,
   HollandResult,
@@ -67,10 +69,23 @@ function createDefaultUserData(): UserAppData {
       updatedAt: new Date().toISOString()
     },
     graphTexts: {},
+    actionPlans: {},
     graphExpansion: {
       nodes: [],
       edges: [],
       generatedAt: new Date().toISOString()
+    },
+    personalizedGraph: {
+      nodes: [],
+      edges: [],
+      generatedAt: new Date().toISOString(),
+      basedOn: {
+        grade: "",
+        region: "",
+        language: "kk",
+        selectedGoals: [],
+        quizAnswers: {}
+      }
     },
     savedOpportunities: []
   };
@@ -326,12 +341,35 @@ export function updateGraphText(nodeId: string, graphText: GraphAiText) {
   }));
 }
 
+export function updateActionPlan(nodeId: string, actionPlan: ImplementationPlan) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      actionPlans: {
+        ...(user.data.actionPlans ?? {}),
+        [nodeId]: actionPlan
+      }
+    }
+  }));
+}
+
 export function updateGraphExpansion(graphExpansion: GeneratedGraphExpansion) {
   return updateCurrentUser((user) => ({
     ...user,
     data: {
       ...user.data,
       graphExpansion
+    }
+  }));
+}
+
+export function updatePersonalizedGraph(personalizedGraph: PersonalizedGraph) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      personalizedGraph
     }
   }));
 }

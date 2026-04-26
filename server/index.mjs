@@ -74,10 +74,23 @@ const defaultUserData = () => ({
     updatedAt: new Date().toISOString()
   },
   graphTexts: {},
+  actionPlans: {},
   graphExpansion: {
     nodes: [],
     edges: [],
     generatedAt: new Date().toISOString()
+  },
+  personalizedGraph: {
+    nodes: [],
+    edges: [],
+    generatedAt: new Date().toISOString(),
+    basedOn: {
+      grade: "",
+      region: "",
+      language: "kk",
+      selectedGoals: [],
+      quizAnswers: {}
+    }
   },
   savedOpportunities: []
 });

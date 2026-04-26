@@ -14,6 +14,7 @@ import { formatKztCompact } from "../lib/financialCalculator";
 import type {
   DesiredPath,
   MainTab,
+  PersonalizedGraph,
   PortfolioGenerationContext,
   UserAccount,
   UserPath
@@ -22,7 +23,9 @@ import type {
 type HomeScreenProps = {
   desiredPath?: DesiredPath | null;
   path: UserPath;
+  personalizedGraph?: PersonalizedGraph;
   portfolioContext?: PortfolioGenerationContext;
+  readyMessage?: string;
   user: UserAccount;
   onNavigate: (tab: MainTab) => void;
   onRetakeDiagnostic: () => void;
@@ -31,7 +34,9 @@ type HomeScreenProps = {
 export function HomeScreen({
   desiredPath,
   path,
+  personalizedGraph,
   portfolioContext,
+  readyMessage,
   user,
   onNavigate,
   onRetakeDiagnostic
@@ -40,6 +45,7 @@ export function HomeScreen({
   const selectedGoals = user.data.selectedGoals.length;
   const portfolioState = user.data.portfolio.generated ? "Generated" : "Draft";
   const target = desiredPath?.targetTitle ?? path.opportunity;
+  const basedOn = personalizedGraph?.basedOn;
 
   return (
     <div className="space-y-4">
@@ -49,12 +55,35 @@ export function HomeScreen({
         <p className="mt-2 text-sm font-semibold leading-6 text-white/85">
           {user.name}, {user.grade}, {user.region}
         </p>
+        {readyMessage ? (
+          <p className="mt-3 rounded-2xl bg-white/15 px-3 py-2 text-sm font-bold text-white">
+            {readyMessage}
+          </p>
+        ) : null}
         <div className="mt-4 grid grid-cols-3 gap-2">
           <StatusValue label="Goals" value={String(selectedGoals)} />
           <StatusValue label="Test" value={quizCount ? `${quizCount}/5` : "0/5"} />
           <StatusValue label="Portfolio" value={portfolioState} />
         </div>
       </section>
+
+      {basedOn ? (
+        <Card>
+          <div className="flex items-start gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-qadam-primary">
+              <Route size={21} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-black">Your graph was created based on:</h3>
+              <p className="mt-1 text-sm leading-6 text-qadam-muted">
+                Grade {basedOn.grade || "not provided"}, {basedOn.region || "region not provided"}; goals:{" "}
+                {basedOn.selectedGoals.length ? basedOn.selectedGoals.join(", ") : "not provided"}; quiz:{" "}
+                {Object.values(basedOn.quizAnswers).join(", ") || "not provided"}.
+              </p>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       <Card>
         <div className="flex items-start justify-between gap-3">

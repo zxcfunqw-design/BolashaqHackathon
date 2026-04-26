@@ -10,36 +10,46 @@ import {
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { formatKztCompact } from "../lib/financialCalculator";
-import type { DesiredPath, HollandResult, MainTab, UserPath } from "../types";
+import type { DesiredPath, HollandResult, MainTab, PersonalizedGraph, UserPath } from "../types";
 
 type DashboardScreenProps = {
   desiredPath?: DesiredPath | null;
   path: UserPath;
   hollandResult?: HollandResult | null;
+  personalizedGraph?: PersonalizedGraph;
+  readyMessage?: string;
   onNavigate: (tab: MainTab) => void;
 };
 
 const dashboardItems = [
-  { title: "My Graph", subtitle: "Connected DFS paths", tab: "path" as MainTab, icon: Route },
-  { title: "Next Step", subtitle: "Finish Python lesson 3", tab: "plan" as MainTab, icon: ClipboardCheck },
+  { title: "My Graph", subtitle: "Personal path graph", tab: "path" as MainTab, icon: Route },
+  { title: "Next Step", subtitle: "Open an action node", tab: "plan" as MainTab, icon: ClipboardCheck },
   { title: "90-Day Plan", subtitle: "Portfolio proof roadmap", tab: "plan" as MainTab, icon: MapPinned },
   { title: "Matching Opportunities", subtitle: "Saved low-internet options", tab: "opportunities" as MainTab, icon: Trophy },
-  { title: "Portfolio Draft", subtitle: "Ready to generate", tab: "portfolio" as MainTab, icon: BriefcaseBusiness }
+  { title: "Portfolio Draft", subtitle: "Ready to improve", tab: "portfolio" as MainTab, icon: BriefcaseBusiness }
 ] as const;
 
 export function DashboardScreen({
   desiredPath,
   path,
   hollandResult,
+  personalizedGraph,
+  readyMessage,
   onNavigate
 }: DashboardScreenProps) {
   const topHollandTypes = hollandResult?.topTypes.join(" + ");
+  const basedOn = personalizedGraph?.basedOn;
 
   return (
     <div className="space-y-4">
       <section className="rounded-[28px] bg-qadam-primary p-5 text-white shadow-soft">
         <Badge tone="yellow">Offline-ready: your path is saved</Badge>
         <h2 className="mt-4 text-3xl font-black">Hello!</h2>
+        {readyMessage ? (
+          <p className="mt-3 rounded-2xl bg-white/15 px-3 py-2 text-sm font-bold text-white">
+            {readyMessage}
+          </p>
+        ) : null}
         <p className="mt-2 text-base font-semibold text-white/90">Your path: {path.summary}</p>
         {desiredPath ? (
           <p className="mt-2 text-sm font-semibold text-white/80">
@@ -54,6 +64,29 @@ export function DashboardScreen({
           ))}
         </div>
       </section>
+
+      {basedOn ? (
+        <Card>
+          <Badge tone="blue">Personalized graph</Badge>
+          <h3 className="mt-3 text-lg font-black">Your graph was created based on:</h3>
+          <dl className="mt-3 grid gap-2 text-sm">
+            <DashboardFact label="Grade" value={basedOn.grade || "Not provided"} />
+            <DashboardFact label="Region" value={basedOn.region || "Not provided"} />
+            <DashboardFact
+              label="Selected goals"
+              value={basedOn.selectedGoals.length ? basedOn.selectedGoals.join(", ") : "Not provided"}
+            />
+            <DashboardFact
+              label="Quiz answers"
+              value={
+                Object.entries(basedOn.quizAnswers)
+                  .map(([key, value]) => `${key}: ${value}`)
+                  .join("; ") || "Not provided"
+              }
+            />
+          </dl>
+        </Card>
+      ) : null}
 
       <div className="grid gap-3">
         {hollandResult ? (
@@ -93,6 +126,15 @@ export function DashboardScreen({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function DashboardFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-qadam-bg px-3 py-2">
+      <dt className="text-xs font-black uppercase text-qadam-primary">{label}</dt>
+      <dd className="mt-1 font-semibold leading-6 text-qadam-graphite">{value}</dd>
     </div>
   );
 }

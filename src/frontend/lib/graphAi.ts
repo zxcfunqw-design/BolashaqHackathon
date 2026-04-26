@@ -14,7 +14,7 @@ export type OpenAiGraphTextRequest = GraphTextRequest & {
   universities: typeof universities;
 };
 
-const GRAPH_TEXT_API_URL = import.meta.env.DEV
+const GRAPH_TEXT_API_URL = import.meta.env?.DEV
   ? "http://127.0.0.1:8787/api/graph-text"
   : "/api/graph-text";
 

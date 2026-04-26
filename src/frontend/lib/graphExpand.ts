@@ -23,7 +23,7 @@ export type OpenAiGraphExpandRequest = GraphExpandRequest & {
   universities: typeof universities;
 };
 
-const GRAPH_EXPAND_API_URL = import.meta.env.DEV
+const GRAPH_EXPAND_API_URL = import.meta.env?.DEV
   ? "http://127.0.0.1:8787/api/graph-expand"
   : "/api/graph-expand";
 
@@ -60,6 +60,7 @@ export function createOpenAiGraphExpandRequest(request: OpenAiGraphExpandRequest
     instructions: [
       "You expand a career-path graph for rural school students in Kazakhstan.",
       "Use the selected graph node, student's selected goals, quiz answers, current path, existing graph, and university JSON.",
+      "If the selected node is the student/root node, build the first personalized branch from the onboarding survey instead of adding generic extra nodes.",
       "Suggest 3-5 new graph nodes and 3-6 edges.",
       "Allowed node types: direction(layer 2), skill(layer 3), action(layer 4), opportunity(layer 5).",
       "Opportunities may be universities, hackathons, contests, grants, clubs, mini-projects, or portfolio milestones.",
@@ -156,80 +157,221 @@ function sanitizeExpansion(
 function createFallbackExpansion(request: GraphExpandRequest): GeneratedGraphExpansion {
   const baseY = Math.min(620, Math.max(60, request.selectedNode.y + 128));
   const source = request.selectedNode.id;
+  const interest = request.quizAnswers.interests ?? request.path.interests[0] ?? "IT";
+  const access = request.quizAnswers.access ?? "Phone only";
+  const experience = request.quizAnswers.experience ?? "Nothing yet";
+  const yearlyGoal = request.quizAnswers.goal ?? "Build first project";
+  const studyPlace = request.quizAnswers["study-place"] ?? "Rural school";
+  const selectedGoal = request.selectedGoals[0] ?? "skills";
+  const slug = slugify([source, interest, yearlyGoal].join("-"));
+  const direction = directionForInterest(interest);
+  const skill = skillForAccess(access, interest);
+  const action = actionForGoal(yearlyGoal, experience, interest);
+  const opportunity = opportunityForProfile(studyPlace, selectedGoal, interest);
 
   return {
     nodes: [
       {
-        id: `ai-skill-${source}-english-portfolio`,
-        type: "skill",
-        layer: 3,
-        title: "English portfolio writing",
-        subtitle: "Applications and project story",
+        id: `ai-direction-${slug}`,
+        type: "direction",
+        layer: 2,
+        title: direction.title,
+        subtitle: `Based on ${interest} interest`,
         costKzt: 0,
-        costNote: "Can be practiced with free templates and teacher feedback.",
-        fundingOptions: ["Teacher mentor", "Free templates"],
-        x: 492,
+        costNote: "Personalized from the onboarding survey.",
+        fundingOptions: ["School mentor", "Free online materials"],
+        x: 250,
         y: baseY,
         details: [
-          "Write one short project story in English.",
-          "Prepare vocabulary for university and hackathon applications.",
-          "Keep a Russian/Kazakh version for local opportunities."
+          `Student context: ${studyPlace}, access: ${access}.`,
+          `Survey goal: ${yearlyGoal}.`,
+          direction.detail
         ]
       },
       {
-        id: `ai-action-${source}-hackathon-draft`,
+        id: `ai-skill-${slug}`,
+        type: "skill",
+        layer: 3,
+        title: skill.title,
+        subtitle: skill.subtitle,
+        costKzt: 0,
+        costNote: "Can be practiced with free or low-data resources.",
+        fundingOptions: ["Teacher mentor", "Offline practice", "Free templates"],
+        x: 492,
+        y: baseY,
+        details: [
+          skill.detail,
+          `Start from current experience: ${experience}.`,
+          "Save screenshots, notes or teacher feedback as proof."
+        ]
+      },
+      {
+        id: `ai-action-${slug}`,
         type: "action",
         layer: 4,
-        title: "Hackathon application draft",
-        subtitle: "Problem, solution, role, result",
+        title: action.title,
+        subtitle: action.subtitle,
         costKzt: 5000,
-        costNote: "Printing or mobile internet reserve.",
+        costNote: "Small reserve for mobile internet, printing or local travel.",
         fundingOptions: ["School support", "Team split"],
         x: 742,
         y: baseY,
         details: [
-          "Create a one-page idea pitch.",
-          "Explain your role and the village/school problem.",
-          "Attach screenshots or a simple prototype."
+          action.detail,
+          "Explain the problem, your role, result and next improvement.",
+          "Attach one visible artifact: photo, document, prototype or certificate."
         ]
       },
       {
-        id: `ai-opportunity-${source}-local-stem`,
+        id: `ai-opportunity-${slug}`,
         type: "opportunity",
         layer: 5,
-        title: "Local STEM contest",
-        subtitle: "AI draft opportunity",
+        title: opportunity.title,
+        subtitle: opportunity.subtitle,
         costKzt: 10000,
-        costNote: "AI draft; verify exact contest and deadline.",
+        costNote: "AI fallback estimate; verify exact requirements and deadline.",
         fundingOptions: ["District education office", "School budget"],
         x: 986,
         y: baseY,
         details: [
-          "Look for regional STEM, robotics or project contests.",
-          "Prefer online or hybrid formats for weak internet.",
-          "Use the same portfolio draft for multiple applications."
+          opportunity.detail,
+          "Prefer online or hybrid formats if internet access is limited.",
+          "Reuse the same portfolio draft for several applications."
         ]
       }
     ],
     edges: [
-      { id: `ai-edge-${source}-english`, from: source, to: `ai-skill-${source}-english-portfolio`, label: "add", tone: "blue" },
+      { id: `ai-edge-${slug}-direction`, from: source, to: `ai-direction-${slug}`, label: "match", tone: "blue" },
       {
-        id: `ai-edge-${source}-draft`,
-        from: `ai-skill-${source}-english-portfolio`,
-        to: `ai-action-${source}-hackathon-draft`,
-        label: "prepare",
+        id: `ai-edge-${slug}-skill`,
+        from: `ai-direction-${slug}`,
+        to: `ai-skill-${slug}`,
+        label: "learn",
+        tone: "primary"
+      },
+      {
+        id: `ai-edge-${slug}-action`,
+        from: `ai-skill-${slug}`,
+        to: `ai-action-${slug}`,
+        label: "build",
         tone: "yellow"
       },
       {
-        id: `ai-edge-${source}-contest`,
-        from: `ai-action-${source}-hackathon-draft`,
-        to: `ai-opportunity-${source}-local-stem`,
+        id: `ai-edge-${slug}-opportunity`,
+        from: `ai-action-${slug}`,
+        to: `ai-opportunity-${slug}`,
         label: "apply",
         tone: "green"
       }
     ],
     generatedAt: new Date().toISOString()
   };
+}
+
+function directionForInterest(interest: string) {
+  const normalized = interest.toLowerCase();
+  if (normalized.includes("medicine")) {
+    return {
+      title: "Health Tech Direction",
+      detail: "Connect biology, data and community health problems."
+    };
+  }
+  if (normalized.includes("agrotech") || normalized.includes("ecology")) {
+    return {
+      title: "Agro/Eco Tech Direction",
+      detail: "Work on local agriculture, ecology or resource-monitoring problems."
+    };
+  }
+  if (normalized.includes("design") || normalized.includes("business")) {
+    return {
+      title: "Product Builder Direction",
+      detail: "Turn user needs into a small service, design or business experiment."
+    };
+  }
+  if (normalized.includes("robotics") || normalized.includes("physics")) {
+    return {
+      title: "Engineering Direction",
+      detail: "Build practical prototypes with physics, sensors or simple simulations."
+    };
+  }
+
+  return {
+    title: "Software / AI Direction",
+    detail: "Start with useful software, data or AI mini-projects."
+  };
+}
+
+function skillForAccess(access: string, interest: string) {
+  const lowAccess = access.toLowerCase().includes("phone") || access.toLowerCase().includes("weak");
+  if (lowAccess) {
+    return {
+      title: "Phone-first research",
+      subtitle: "Notes, prompts, screenshots",
+      detail: `Use a phone-friendly workflow to study ${interest} and collect project evidence.`
+    };
+  }
+
+  return {
+    title: "Prototype basics",
+    subtitle: "Simple tools and visible proof",
+    detail: `Use available computer time to make a small ${interest} prototype.`
+  };
+}
+
+function actionForGoal(goal: string, experience: string, interest: string) {
+  if (goal.toLowerCase().includes("contest") || experience.toLowerCase().includes("olympiad")) {
+    return {
+      title: "Contest-ready draft",
+      subtitle: "Problem, idea, proof",
+      detail: `Prepare a contest submission around ${interest}.`
+    };
+  }
+  if (goal.toLowerCase().includes("grant")) {
+    return {
+      title: "Grant application pack",
+      subtitle: "Budget, impact, evidence",
+      detail: "Write a small budget and explain who benefits from the project."
+    };
+  }
+
+  return {
+    title: "First mini-project",
+    subtitle: "One useful result",
+    detail: `Build a small ${interest} project that solves a school or local problem.`
+  };
+}
+
+function opportunityForProfile(studyPlace: string, selectedGoal: string, interest: string) {
+  if (selectedGoal === "portfolio") {
+    return {
+      title: "Portfolio milestone",
+      subtitle: `${studyPlace} evidence`,
+      detail: "Package the project as a portfolio story with proof and reflection."
+    };
+  }
+  if (selectedGoal === "grants") {
+    return {
+      title: "Local mini-grant",
+      subtitle: `${interest} support`,
+      detail: "Ask school or district contacts about small project funding."
+    };
+  }
+
+  return {
+    title: "Regional student contest",
+    subtitle: `${interest} opportunity`,
+    detail: "Search for a regional contest, hackathon or school project showcase."
+  };
+}
+
+function slugify(value: string) {
+  const slug = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+
+  return slug || `profile-${Date.now()}`;
 }
 
 async function readError(response: Response) {
