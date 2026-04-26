@@ -60,6 +60,82 @@ export const translations = {
     "opps.title": "Сізге сәйкес келетіндер",
     "opps.offline_warning": "Интернет жоқ. Сақталған мүмкіндіктерді көрсетудеміз."
   },
+  ru: {
+    // shared / common
+    "common.back": "Назад",
+    "common.next": "Далее",
+    "common.continue": "Продолжить",
+    "common.save": "Сохранить",
+    "common.saved": "Сохранено",
+    "common.refresh": "Обновить",
+    "common.offline_badge": "Офлайн: путь сохранен",
+    "common.online_badge": "Онлайн",
+
+    // navigation
+    "nav.home": "Главная",
+    "nav.path": "Мой путь",
+    "nav.plan": "План",
+    "nav.opportunities": "Возможности",
+    "nav.portfolio": "Портфолио",
+
+    // appshell
+    "app.offline_notice": "Нет интернета, но твой путь сохранен",
+    "app.account_btn": "Аккаунт",
+
+    // auth screen
+    "auth.badge_offline": "Офлайн аккаунт",
+    "auth.title_register": "Создай профиль Qadam",
+    "auth.title_login": "С возвращением",
+    "auth.subtitle": "Данные сохраняются на этом устройстве в JSON. Бэкенд пока не нужен.",
+    "auth.tab_register": "Регистрация",
+    "auth.tab_login": "Вход",
+    "auth.field_name": "Имя",
+    "auth.field_name_placeholder": "Аружан",
+    "auth.field_grade": "Класс",
+    "auth.field_region": "Регион",
+    "auth.field_lang": "Язык",
+    "auth.field_login": "Логин",
+    "auth.field_login_placeholder": "телефон или email",
+    "auth.field_password": "Пароль",
+    "auth.field_password_placeholder": "минимум 4 символа",
+    "auth.btn_saving": "Сохранение...",
+    "auth.btn_register": "Зарегистрироваться и продолжить",
+    "auth.btn_login": "Войти",
+    "auth.footer_note": "Только демо-авторизация: это локальное хранилище.",
+
+    // goal Selection Screen
+    "goals.step1": "Шаг 1",
+    "goals.title": "Что ты хочешь сделать?",
+    "goals.subtitle": "Выбери одну или несколько целей. Демо-маршрут будет построен на их основе.",
+    "goals.btn_continue": "Перейти к диагностике",
+
+    // quiz Screen
+    "quiz.badge": "Диагностика Qadam Start",
+    "quiz.question_counter": "Вопрос {current} из {total}",
+    "quiz.btn_build": "Построить мой путь",
+
+    // dsshboard Screen
+    "dash.offline_badge": "Офлайн-режим: путь сохранен",
+    "dash.greeting": "Привет!",
+    "dash.your_path": "Твой путь:",
+    "dash.desired": "Целевой:",
+    "dash.ai_profile": "Профиль AI Агента",
+    "dash.item_graph_title": "Мой граф",
+    "dash.item_graph_sub": "Связанные DFS маршруты",
+    "dash.item_plan_title": "Следующий шаг",
+    "dash.item_plan_sub": "Продолжить обучение",
+    "dash.item_90day_title": "План на 90 дней",
+    "dash.item_90day_sub": "Доказательства для портфолио",
+    "dash.item_opps_title": "Подходящие возможности",
+    "dash.item_opps_sub": "Сохраненные опции",
+    "dash.item_port_title": "Черновик портфолио",
+    "dash.item_port_sub": "Готово к генерации",
+
+    // opportunities Screen
+    "opps.badge": "Возможности",
+    "opps.title": "Подобрано для тебя",
+    "opps.offline_warning": "Нет интернета. Показываем сохранённые возможности."
+  }
 } as const;
 
 export type TranslationKey = keyof typeof translations.ru;
