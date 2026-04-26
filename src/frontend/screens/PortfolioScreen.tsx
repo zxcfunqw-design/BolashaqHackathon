@@ -4,14 +4,27 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { createPortfolioOutput, initialPortfolioFields } from "../lib/storage";
 import { generatePortfolioDraft, type GeneratedPortfolioDraft } from "../lib/portfolioAi";
-import type { PortfolioDraft, PortfolioFields, PortfolioLanguage } from "../types";
+import type {
+  DesiredPath,
+  PortfolioDraft,
+  PortfolioFields,
+  PortfolioGenerationContext,
+  PortfolioLanguage
+} from "../types";
 
 type PortfolioScreenProps = {
+  context?: PortfolioGenerationContext;
+  desiredPath?: DesiredPath | null;
   portfolio: PortfolioDraft;
   onPortfolioChange: (portfolio: PortfolioDraft) => void;
 };
 
-export function PortfolioScreen({ portfolio, onPortfolioChange }: PortfolioScreenProps) {
+export function PortfolioScreen({
+  context,
+  desiredPath,
+  portfolio,
+  onPortfolioChange
+}: PortfolioScreenProps) {
   const [fields, setFields] = useState<PortfolioFields>({
     ...initialPortfolioFields,
     ...portfolio.fields
@@ -77,12 +90,59 @@ export function PortfolioScreen({ portfolio, onPortfolioChange }: PortfolioScree
     savePortfolio(nextFields, null, false);
   };
 
+  const applyDesiredPath = () => {
+    if (!desiredPath) return;
+
+    const nextFields = {
+      ...fields,
+      targetUniversity: desiredPath.targetTitle,
+      targetProgram: fields.targetProgram || "Best-fit undergraduate program",
+      nextStep: `Prepare evidence for: ${desiredPath.pathTitles.join(" -> ")}`,
+      evidence:
+        fields.evidence ||
+        "Selected path, project screenshots, certificates, teacher feedback and a short reflection"
+    };
+
+    setFields(nextFields);
+    setDraft(null);
+    setCopied(false);
+    savePortfolio(nextFields, null, false);
+  };
+
+  const applyContext = () => {
+    const nextFields = {
+      ...fields,
+      studentName: fields.studentName || context?.account?.name || "",
+      grade: fields.grade || context?.account?.grade || "",
+      school: fields.school || context?.account?.region || "",
+      careerGoal:
+        fields.careerGoal ||
+        context?.careerTest?.resultTitle ||
+        context?.path?.summary ||
+        context?.quizAnswers?.interests ||
+        "",
+      targetUniversity: fields.targetUniversity || context?.desiredPath?.targetTitle || "",
+      targetProgram: fields.targetProgram || context?.path?.summary || "",
+      academicStrengths: fields.academicStrengths || context?.path?.skills?.join(", ") || "",
+      nextStep:
+        fields.nextStep ||
+        (context?.desiredPath?.pathTitles?.length
+          ? `Prepare evidence for: ${context.desiredPath.pathTitles.join(" -> ")}`
+          : "")
+    };
+
+    setFields(nextFields);
+    setDraft(null);
+    setCopied(false);
+    savePortfolio(nextFields, null, false);
+  };
+
   const createDraft = async () => {
     setStatus("generating");
     setCopied(false);
 
     try {
-      const nextDraft = await generatePortfolioDraft(fields);
+      const nextDraft = await generatePortfolioDraft(fields, context);
       setDraft(nextDraft);
       savePortfolio(fields, nextDraft, true);
     } finally {
@@ -111,6 +171,31 @@ export function PortfolioScreen({ portfolio, onPortfolioChange }: PortfolioScree
 
       <Card>
         <div className="space-y-4">
+          {context ? (
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3">
+              <p className="text-xs font-black uppercase text-blue-700">Portfolio context</p>
+              <p className="mt-1 text-sm font-bold text-qadam-graphite">
+                {context.account?.name || "Student"} · {context.account?.grade || "grade"} ·{" "}
+                {context.account?.region || "region"}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-qadam-muted">{describeContext(context)}</p>
+              <Button className="mt-3 min-h-10 px-3 py-2" onClick={applyContext} variant="secondary">
+                Use account and test data
+              </Button>
+            </div>
+          ) : null}
+          {desiredPath ? (
+            <div className="rounded-2xl border border-qadam-primary/20 bg-emerald-50 p-3">
+              <p className="text-xs font-black uppercase text-qadam-primary">Selected graph path</p>
+              <p className="mt-1 text-sm font-bold text-qadam-graphite">{desiredPath.targetTitle}</p>
+              <p className="mt-1 text-xs leading-5 text-qadam-muted">
+                {desiredPath.pathTitles.join(" -> ")}
+              </p>
+              <Button className="mt-3 min-h-10 px-3 py-2" onClick={applyDesiredPath} variant="secondary">
+                Use this path in portfolio
+              </Button>
+            </div>
+          ) : null}
           <LanguageSwitch
             value={fields.language}
             onChange={(value) => updateField("language", value)}
@@ -252,6 +337,20 @@ export function PortfolioScreen({ portfolio, onPortfolioChange }: PortfolioScree
       ) : null}
     </div>
   );
+}
+
+function describeContext(context: PortfolioGenerationContext) {
+  const parts = [
+    context.selectedGoals?.length ? `Goals: ${context.selectedGoals.join(", ")}` : "",
+    context.quizAnswers && Object.keys(context.quizAnswers).length
+      ? `Diagnostic: ${Object.values(context.quizAnswers).join(", ")}`
+      : "Diagnostic: pending",
+    context.careerTest?.resultTitle ? `Career test: ${context.careerTest.resultTitle}` : "Career test: pending",
+    context.path?.summary ? `Path: ${context.path.summary}` : "",
+    context.desiredPath?.targetTitle ? `Target: ${context.desiredPath.targetTitle}` : ""
+  ].filter(Boolean);
+
+  return parts.join(" · ");
 }
 
 type FieldProps = {

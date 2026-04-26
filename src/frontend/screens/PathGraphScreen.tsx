@@ -13,11 +13,14 @@ import {
   formatKztCompact,
   type FinancialPath
 } from "../lib/financialCalculator";
-import type { UserPath } from "../types";
+import type { DesiredPath, UserPath } from "../types";
 import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 
 type PathGraphScreenProps = {
+  desiredPath?: DesiredPath | null;
+  onDesiredPathChange?: (desiredPath: DesiredPath | null) => void;
   path: UserPath;
 };
 
@@ -42,10 +45,10 @@ const nodeStyles: Record<UniversityGraphNode["type"], string> = {
 
 const nodeBadges: Record<UniversityGraphNode["type"], string> = {
   student: "1-layer",
-  direction: "Направление",
-  skill: "Навык",
-  action: "Действие",
-  opportunity: "Возможность"
+  direction: "Direction",
+  skill: "Skill",
+  action: "Action",
+  opportunity: "University"
 };
 
 const edgeColors: Record<NonNullable<UniversityGraphEdge["tone"]>, string> = {
@@ -56,16 +59,19 @@ const edgeColors: Record<NonNullable<UniversityGraphEdge["tone"]>, string> = {
   muted: "#94A3B8"
 };
 
-export function PathGraphScreen({ path }: PathGraphScreenProps) {
+export function PathGraphScreen({ desiredPath, onDesiredPathChange, path }: PathGraphScreenProps) {
+  const initialNodeIds = desiredPath?.nodeIds ?? path.recommendedGraphNodeIds ?? [
+    "you",
+    "ai-engineer",
+    "ai-python",
+    "ai-bot",
+    "aitu"
+  ];
   const [scale, setScale] = useState(0.74);
   const [offset, setOffset] = useState({ x: 8, y: 18 });
-  const [selectedId, setSelectedId] = useState("you");
+  const [selectedId, setSelectedId] = useState(initialNodeIds[initialNodeIds.length - 1] ?? "you");
   const [dragging, setDragging] = useState(false);
-  const [expanded, setExpanded] = useState<ExpandedBranch>({
-    directionId: "ai-engineer",
-    skillId: "ai-python",
-    actionId: "ai-bot"
-  });
+  const [expanded, setExpanded] = useState<ExpandedBranch>(() => getExpandedFromNodeIds(initialNodeIds));
   const lastPointer = useRef({ x: 0, y: 0 });
 
   const nodesById = useMemo(
@@ -227,13 +233,24 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
   };
 
   const activateFinancialPath = (financialPath: FinancialPath) => {
-    const directionId = financialPath.steps.find((step) => step.type === "direction")?.nodeId ?? null;
-    const skillId = financialPath.steps.find((step) => step.type === "skill")?.nodeId ?? null;
-    const actionId = financialPath.steps.find((step) => step.type === "action")?.nodeId ?? null;
-
-    setExpanded({ directionId, skillId, actionId });
+    setExpanded(getExpandedFromNodeIds(financialPath.nodeIds));
     setSelectedId(financialPath.targetId);
   };
+
+  const chooseDesiredPath = (financialPath: FinancialPath) => {
+    activateFinancialPath(financialPath);
+    onDesiredPathChange?.({
+      nodeIds: financialPath.nodeIds,
+      pathTitles: financialPath.steps.map((step) => step.title),
+      targetId: financialPath.targetId,
+      targetTitle: financialPath.targetTitle,
+      totalCostKzt: financialPath.totalCostKzt,
+      fundingOptions: financialPath.fundingOptions,
+      selectedAt: new Date().toISOString()
+    });
+  };
+
+  const desiredPathKey = desiredPath?.nodeIds.join(">");
 
   return (
     <div className="space-y-4">
@@ -244,7 +261,7 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
         </div>
         <h2 className="mt-3 text-2xl font-black">Path canvas</h2>
         <p className="mt-2 text-sm leading-6 text-qadam-muted">
-          {`${path.summary}: ты -> направления -> навыки -> действия -> возможности.`}
+          {`${path.summary}: you -> direction -> skill -> action -> university.`}
         </p>
       </section>
 
@@ -410,6 +427,16 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
                 </span>
               ))}
             </div>
+            <Button
+              className="mt-4"
+              fullWidth
+              onClick={() => chooseDesiredPath(selectedFinancialPath)}
+              variant={desiredPathKey === selectedFinancialPath.nodeIds.join(">") ? "secondary" : "primary"}
+            >
+              {desiredPathKey === selectedFinancialPath.nodeIds.join(">")
+                ? "Selected as desired path"
+                : "Choose this path"}
+            </Button>
           </div>
         ) : (
           <div className="mt-4 rounded-2xl border border-qadam-border bg-qadam-bg p-3 text-sm leading-6 text-qadam-muted">
@@ -583,6 +610,38 @@ function IconButton({ children, label, onClick }: IconButtonProps) {
 
 function getTargets(sourceId: string, outgoingBySource: Map<string, UniversityGraphEdge[]>) {
   return (outgoingBySource.get(sourceId) ?? []).map((edge) => edge.to);
+}
+
+function getExpandedFromNodeIds(nodeIds: string[]): ExpandedBranch {
+  return {
+    directionId: nodeIds.find((nodeId) => nodeId.endsWith("-engineer")) ?? null,
+    skillId:
+      nodeIds.find((nodeId) =>
+        [
+          "ai-python",
+          "ai-math",
+          "ai-english",
+          "software-js",
+          "software-api",
+          "software-product",
+          "robotics-physics",
+          "robotics-iot",
+          "robotics-cad"
+        ].includes(nodeId)
+      ) ?? null,
+    actionId:
+      nodeIds.find((nodeId) =>
+        [
+          "ai-bot",
+          "ai-data",
+          "ai-olympiad",
+          "software-local-event",
+          "software-hackathon",
+          "robotics-sensor",
+          "robotics-demo-day"
+        ].includes(nodeId)
+      ) ?? null
+  };
 }
 
 function describeFinancialPath(financialPath: FinancialPath) {

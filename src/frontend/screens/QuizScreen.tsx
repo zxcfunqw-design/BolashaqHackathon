@@ -17,7 +17,8 @@ export function QuizScreen({ onComplete, initialAnswers = {} }: QuizScreenProps)
   const [answers, setAnswers] = useState<QuizAnswers>(initialAnswers);
   const question = quizQuestions[step];
   const selected = answers[question.id];
-  const progress = useMemo(() => Math.round(((step + 1) / 12) * 100), [step]);
+  const totalQuestions = quizQuestions.length;
+  const progress = useMemo(() => Math.round(((step + 1) / totalQuestions) * 100), [step, totalQuestions]);
 
   const choose = (answer: string) => {
     setAnswers((current) => ({ ...current, [question.id]: answer }));
@@ -37,7 +38,9 @@ export function QuizScreen({ onComplete, initialAnswers = {} }: QuizScreenProps)
       <section className="space-y-3">
         <div>
           <p className="text-sm font-bold text-qadam-primary">Qadam Start diagnostic</p>
-          <h2 className="mt-1 text-2xl font-black">Question {step + 1} of 12</h2>
+          <h2 className="mt-1 text-2xl font-black">
+            Question {step + 1} of {totalQuestions}
+          </h2>
         </div>
         <ProgressBar value={progress} />
       </section>

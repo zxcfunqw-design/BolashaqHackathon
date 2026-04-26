@@ -38,14 +38,14 @@ const baseUniversityGraphNodes: Array<
     id: "you",
     type: "student",
     layer: 1,
-    title: "Ты",
+    title: "You",
     subtitle: "IT + Engineering path",
     x: 40,
     y: 314,
     details: [
-      "Интересы: IT, физика, робототехника",
-      "Формат: phone-first, слабый интернет",
-      "Цель: выбрать направление, навыки, действия и вузовый результат"
+      "Interests: IT, physics, robotics and practical projects.",
+      "Format: phone-first path that still works with weak internet.",
+      "Goal: choose a direction, skill, action and university endpoint."
     ]
   },
   {
@@ -53,13 +53,13 @@ const baseUniversityGraphNodes: Array<
     type: "direction",
     layer: 2,
     title: "AI Engineer",
-    subtitle: "Лучший fit по тесту",
+    subtitle: "Best fit from diagnostic answers",
     x: 250,
     y: 96,
     details: [
-      "Подходит, если нравятся математика, логика и Python",
-      "Можно начать с простых моделей, чат-ботов и анализа данных",
-      "Дальше путь ведет к AI, Data Science и Computer Science программам"
+      "Good match for students who enjoy math, logic and Python.",
+      "Starts with simple models, chatbots and data analysis.",
+      "Can lead to AI, Data Science and Computer Science programs."
     ]
   },
   {
@@ -67,13 +67,13 @@ const baseUniversityGraphNodes: Array<
     type: "direction",
     layer: 2,
     title: "Software Engineer",
-    subtitle: "Продукты, web, backend",
+    subtitle: "Products, web and backend",
     x: 250,
     y: 314,
     details: [
-      "Подходит, если нравится собирать полезные приложения",
-      "Можно начать с Telegram-бота, сайта или маленького сервиса",
-      "Дальше путь ведет к Software Engineering и Information Systems"
+      "Good match for students who like building useful apps.",
+      "Starts with a Telegram bot, website or small service.",
+      "Can lead to Software Engineering and Information Systems."
     ]
   },
   {
@@ -81,13 +81,13 @@ const baseUniversityGraphNodes: Array<
     type: "direction",
     layer: 2,
     title: "Robotics Engineer",
-    subtitle: "Физика, IoT, устройства",
+    subtitle: "Physics, IoT and devices",
     x: 250,
     y: 532,
     details: [
-      "Подходит, если нравятся физика, схемы и реальные прототипы",
-      "Можно начать с симуляции датчика или Arduino-проекта",
-      "Дальше путь ведет к Robotics, Automation и Engineering"
+      "Good match for students who enjoy physics, circuits and prototypes.",
+      "Starts with a sensor simulation or Arduino-style project.",
+      "Can lead to Robotics, Automation and Engineering programs."
     ]
   },
   {
@@ -95,41 +95,41 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "Python",
-    subtitle: "Код для AI и данных",
+    subtitle: "Code for AI and data",
     x: 492,
     y: 68,
     details: [
-      "Переменные, циклы, функции, работа с файлами",
-      "Мини-библиотеки: pandas, matplotlib или простые API",
-      "Цель: писать маленькие скрипты без страха"
+      "Variables, loops, functions and working with files.",
+      "Mini libraries: pandas, matplotlib or simple APIs.",
+      "Goal: write small scripts without fear."
     ]
   },
   {
     id: "ai-math",
     type: "skill",
     layer: 3,
-    title: "Математика",
-    subtitle: "Логика, алгебра, вероятность",
+    title: "Math",
+    subtitle: "Logic, algebra and probability",
     x: 492,
     y: 172,
     details: [
-      "Алгебра, графики, проценты, вероятность",
-      "Практика через задачи ЕНТ и олимпиадные разборы",
-      "Цель: понимать, почему модель дает результат"
+      "Algebra, graphs, percentages and probability basics.",
+      "Practice through ENT-style tasks and olympiad explanations.",
+      "Goal: understand why a model produces a result."
     ]
   },
   {
     id: "ai-english",
     type: "skill",
     layer: 3,
-    title: "Английский язык",
-    subtitle: "Документация и заявки",
+    title: "English",
+    subtitle: "Documentation and applications",
     x: 492,
     y: 276,
     details: [
-      "Технические слова, чтение условий конкурсов",
-      "Короткие описания проекта для портфолио",
-      "Цель: спокойно читать материалы вузов и курсов"
+      "Technical vocabulary and reading contest rules.",
+      "Short project descriptions for portfolios.",
+      "Goal: read university and course materials confidently."
     ]
   },
   {
@@ -141,9 +141,9 @@ const baseUniversityGraphNodes: Array<
     x: 492,
     y: 276,
     details: [
-      "Страница, формы, простое состояние",
-      "Практика через мини-сервисы для школы",
-      "Цель: собрать первый рабочий интерфейс"
+      "Pages, forms, simple state and responsive layout.",
+      "Practice through small school services.",
+      "Goal: build the first working interface."
     ]
   },
   {
@@ -151,13 +151,13 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "Backend/API",
-    subtitle: "Данные и логика сервиса",
+    subtitle: "Data and service logic",
     x: 492,
     y: 380,
     details: [
-      "Запросы, JSON, хранение данных",
-      "Практика через бота, расписание или каталог",
-      "Цель: понять, как приложение работает внутри"
+      "Requests, JSON, persistence and server logic.",
+      "Practice through a bot, schedule or catalog.",
+      "Goal: understand how an app works inside."
     ]
   },
   {
@@ -165,27 +165,27 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "Product thinking",
-    subtitle: "Проблема, пользователь, результат",
+    subtitle: "Problem, user and result",
     x: 492,
     y: 484,
     details: [
-      "Найти проблему в школе или селе",
-      "Описать пользователя и проверить идею",
-      "Цель: делать не просто код, а полезный продукт"
+      "Find a real problem at school or in the community.",
+      "Describe the user and validate the idea.",
+      "Goal: build not just code, but a useful product."
     ]
   },
   {
     id: "robotics-physics",
     type: "skill",
     layer: 3,
-    title: "Физика",
-    subtitle: "Электричество и механика",
+    title: "Physics",
+    subtitle: "Electricity and mechanics",
     x: 492,
     y: 380,
     details: [
-      "Сила, движение, электрические цепи",
-      "Практика через простые расчеты и симуляции",
-      "Цель: понимать поведение устройства"
+      "Force, motion, electric circuits and simple calculations.",
+      "Practice through experiments and simulations.",
+      "Goal: explain how the device behaves."
     ]
   },
   {
@@ -193,13 +193,13 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "IoT basics",
-    subtitle: "Датчики и автоматизация",
+    subtitle: "Sensors and automation",
     x: 492,
     y: 484,
     details: [
-      "Датчик, сигнал, условие, действие",
-      "Практика через Arduino/Tinkercad simulation",
-      "Цель: собрать понятный prototype story"
+      "Sensor, signal, condition and action.",
+      "Practice through Arduino or Tinkercad simulation.",
+      "Goal: create a clear prototype story."
     ]
   },
   {
@@ -207,111 +207,111 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "3D/CAD",
-    subtitle: "Модель и сборка",
+    subtitle: "Model and assembly",
     x: 492,
     y: 588,
     details: [
-      "Эскиз, размеры, простая конструкция",
-      "Практика через корпус датчика или макет",
-      "Цель: показать инженерное мышление"
+      "Sketch, dimensions and simple construction.",
+      "Practice through a sensor case or small model.",
+      "Goal: show engineering thinking."
     ]
   },
   {
     id: "ai-bot",
     type: "action",
     layer: 4,
-    title: "Сделать Telegram-бота",
-    subtitle: "AI-помощник для школы",
+    title: "Build a Telegram bot",
+    subtitle: "AI assistant for school",
     x: 734,
     y: 58,
     details: [
-      "Бот отвечает на частые вопросы учеников",
-      "Можно начать с правил, меню и простого текста",
-      "Портфолио: проблема, решение, скриншоты, отзыв"
+      "Bot answers common student questions.",
+      "Start with rules, menu and simple text flows.",
+      "Portfolio proof: problem, solution, screenshots and feedback."
     ]
   },
   {
     id: "ai-data",
     type: "action",
     layer: 4,
-    title: "Собрать data dashboard",
-    subtitle: "Учеба, кружки или село",
+    title: "Build a data dashboard",
+    subtitle: "Study, clubs or community data",
     x: 734,
     y: 188,
     details: [
-      "Собрать таблицу и показать выводы графиками",
-      "Можно взять школьные или открытые данные",
-      "Портфолио: dataset, выводы, визуализация"
+      "Collect a table and show conclusions with charts.",
+      "Use school data or open data.",
+      "Portfolio proof: dataset, insights and visualizations."
     ]
   },
   {
     id: "ai-olympiad",
     type: "action",
     layer: 4,
-    title: "Участвовать в олимпиаде",
-    subtitle: "Подготовка на ближайшие месяцы",
+    title: "Join an olympiad",
+    subtitle: "Prepare for upcoming months",
     x: 734,
     y: 318,
     details: [
-      "Выбрать математику, информатику или проектный конкурс",
-      "Сохранить дедлайн и план подготовки",
-      "Портфолио: сертификат, решение, рефлексия"
+      "Choose math, informatics or a project contest.",
+      "Save the deadline and preparation plan.",
+      "Portfolio proof: certificate, solved tasks and reflection."
     ]
   },
   {
     id: "software-local-event",
     type: "action",
     layer: 4,
-    title: "Запустить локальное мероприятие",
-    subtitle: "Регистрация и расписание",
+    title: "Launch a local event tool",
+    subtitle: "Registration and schedule",
     x: 734,
     y: 298,
     details: [
-      "Сделать форму регистрации для школьного события",
-      "Добавить список участников и расписание",
-      "Портфолио: реальный пользователь и результат"
+      "Create a registration form for a school event.",
+      "Add participant list and schedule.",
+      "Portfolio proof: real users and measurable result."
     ]
   },
   {
     id: "software-hackathon",
     type: "action",
     layer: 4,
-    title: "Пойти на хакатон",
-    subtitle: "Команда, MVP, презентация",
+    title: "Go to a hackathon",
+    subtitle: "Team, MVP and presentation",
     x: 734,
     y: 428,
     details: [
-      "Выбрать онлайн или гибридный формат",
-      "Собрать MVP за 1-2 недели",
-      "Портфолио: демо, роль в команде, итог"
+      "Choose an online or hybrid format.",
+      "Build an MVP in one or two weeks.",
+      "Portfolio proof: demo, role in team and outcome."
     ]
   },
   {
     id: "robotics-sensor",
     type: "action",
     layer: 4,
-    title: "Собрать sensor prototype",
-    subtitle: "Умная теплица или класс",
+    title: "Build a sensor prototype",
+    subtitle: "Smart greenhouse or classroom",
     x: 734,
     y: 428,
     details: [
-      "Симулировать датчик температуры/влажности",
-      "Описать пользу для школы или семьи",
-      "Портфолио: схема, логика, фото/видео"
+      "Simulate temperature or humidity sensing.",
+      "Describe value for school, family or community.",
+      "Portfolio proof: scheme, logic, photo or video."
     ]
   },
   {
     id: "robotics-demo-day",
     type: "action",
     layer: 4,
-    title: "Провести demo day",
-    subtitle: "Локальная инженерная защита",
+    title: "Run a demo day",
+    subtitle: "Local engineering presentation",
     x: 734,
     y: 558,
     details: [
-      "Показать прототип учителю или классу",
-      "Собрать вопросы и улучшить проект",
-      "Портфолио: feedback, next iteration, learning"
+      "Show the prototype to a teacher or class.",
+      "Collect questions and improve the project.",
+      "Portfolio proof: feedback, next iteration and learning."
     ]
   },
   {
@@ -323,12 +323,12 @@ const baseUniversityGraphNodes: Array<
     x: 986,
     y: 86,
     details: [
-      "Сильный финал для AI/Software пути",
-      "Можно показать бота, dashboard или web-проект",
-      "Полезно усилить математику, информатику и английский"
+      "Strong endpoint for AI and Software paths.",
+      "Good proof: bot, dashboard or web project.",
+      "Useful to strengthen math, informatics and English."
     ],
     sourceUrl: "https://astanait.edu.kz/en/bachelor/",
-    sourceLabel: "AITU Bachelor programs"
+    sourceLabel: "AITU bachelor programs"
   },
   {
     id: "nu",
@@ -339,9 +339,9 @@ const baseUniversityGraphNodes: Array<
     x: 986,
     y: 248,
     details: [
-      "Сильный финал для research-heavy пути",
-      "Подходит для AI, robotics и engineering",
-      "Важно показывать академическую базу и проекты"
+      "Strong endpoint for research-heavy paths.",
+      "Good fit for AI, robotics and engineering.",
+      "Important to show academic foundation and projects."
     ],
     sourceUrl: "https://old.nu.edu.kz/admissions/undergraduate-eng",
     sourceLabel: "NU undergraduate"
@@ -355,9 +355,9 @@ const baseUniversityGraphNodes: Array<
     x: 986,
     y: 410,
     details: [
-      "Сильный финал для hardware, IoT и robotics",
-      "Портфолио с датчиком или инженерной схемой особенно полезно",
-      "Подходит для технических и индустриальных траекторий"
+      "Strong endpoint for hardware, IoT and robotics.",
+      "A sensor or engineering-scheme portfolio is especially useful.",
+      "Good fit for technical and industrial trajectories."
     ],
     sourceUrl: "https://official.satbayev.university/en/programs",
     sourceLabel: "Satbayev education programs"
@@ -371,9 +371,9 @@ const baseUniversityGraphNodes: Array<
     x: 986,
     y: 572,
     details: [
-      "Сильный финал для software + industry track",
-      "Полезны английский, web/API и продуктовый проект",
-      "Можно показать MVP, хакатон и командную роль"
+      "Strong endpoint for software and industry tracks.",
+      "Useful proof: English, web/API and product project.",
+      "A hackathon MVP can show teamwork and execution."
     ],
     sourceUrl:
       "https://kbtu.edu.kz/en/schools/school-of-information-technology-and-engineering/bachelor-s-educational-programs-of-the-school-of-information-technology-and-engineering",
@@ -491,8 +491,8 @@ const nodeFinance: Record<
     fundingOptions: ["State grant", "University scholarship", "Part-time tech work", "Family plan"]
   },
   nu: {
-    costKzt: 0,
-    costNote: "Grant-focused route placeholder; scholarship competition is required.",
+    costKzt: 150000,
+    costNote: "Grant-focused route placeholder; includes application, test prep and travel reserve, not tuition.",
     fundingOptions: ["NU grant", "Need-based support", "External scholarship"]
   },
   satbayev: {

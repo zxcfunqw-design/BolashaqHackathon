@@ -64,6 +64,7 @@ export const mockUserPath: UserPath = {
   skills: ["Python", "Math", "English"],
   project: "Telegram bot / sensor prototype",
   opportunity: "STEM Hackathon",
+  recommendedGraphNodeIds: ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"],
   savedAt: new Date().toISOString(),
   nodes: [
     {

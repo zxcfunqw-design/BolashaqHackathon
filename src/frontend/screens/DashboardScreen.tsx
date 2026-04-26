@@ -1,9 +1,11 @@
 import { ArrowRight, BriefcaseBusiness, ClipboardCheck, MapPinned, Route, Trophy } from "lucide-react";
-import type { MainTab, UserPath } from "../types";
+import { formatKztCompact } from "../lib/financialCalculator";
+import type { DesiredPath, MainTab, UserPath } from "../types";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 
 type DashboardScreenProps = {
+  desiredPath?: DesiredPath | null;
   path: UserPath;
   onNavigate: (tab: MainTab) => void;
 };
@@ -16,13 +18,18 @@ const dashboardItems = [
   { title: "Portfolio Draft", subtitle: "Ready to generate", tab: "portfolio" as MainTab, icon: BriefcaseBusiness, tone: "blue" }
 ] as const;
 
-export function DashboardScreen({ path, onNavigate }: DashboardScreenProps) {
+export function DashboardScreen({ desiredPath, path, onNavigate }: DashboardScreenProps) {
   return (
     <div className="space-y-4">
       <section className="rounded-[28px] bg-qadam-primary p-5 text-white shadow-soft">
         <Badge tone="yellow">Offline-ready: your path is saved</Badge>
-        <h2 className="mt-4 text-3xl font-black">Сәлем!</h2>
+        <h2 className="mt-4 text-3xl font-black">Hello!</h2>
         <p className="mt-2 text-base font-semibold text-white/90">Your path: {path.summary}</p>
+        {desiredPath ? (
+          <p className="mt-2 text-sm font-semibold text-white/80">
+            Desired: {desiredPath.targetTitle} - {formatKztCompact(desiredPath.totalCostKzt)}
+          </p>
+        ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
           {path.skills.map((skill) => (
             <span key={skill} className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">

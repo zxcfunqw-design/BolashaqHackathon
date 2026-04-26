@@ -2,7 +2,7 @@ import { BriefcaseBusiness, Home, Map, Route, Trophy } from "lucide-react";
 import type { MainTab, NavItem } from "../types";
 
 const items: NavItem[] = [
-  { id: "home", label: "Home", icon: Home },
+  { id: "home", label: "Главная", icon: Home },
   { id: "path", label: "My Path", icon: Route },
   { id: "plan", label: "Plan", icon: Map },
   { id: "opportunities", label: "Opportunities", icon: Trophy },

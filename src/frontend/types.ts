@@ -18,6 +18,16 @@ export type QuizQuestion = {
 
 export type QuizAnswers = Record<string, string>;
 
+export type CareerTestResult = {
+  completedAt: string;
+  resultTitle?: string;
+  recommendedProfessions?: string[];
+  strengths?: string[];
+  risks?: string[];
+  answers?: QuizAnswers;
+  scores?: Record<string, number>;
+};
+
 export type PathNodeData = {
   id: string;
   title: string;
@@ -33,8 +43,19 @@ export type UserPath = {
   skills: string[];
   project: string;
   opportunity: string;
+  recommendedGraphNodeIds?: string[];
   nodes: PathNodeData[];
   savedAt: string;
+};
+
+export type DesiredPath = {
+  nodeIds: string[];
+  pathTitles: string[];
+  targetId: string;
+  targetTitle: string;
+  totalCostKzt: number;
+  fundingOptions: string[];
+  selectedAt: string;
 };
 
 export type PortfolioLanguage = "ru" | "kk" | "en";
@@ -84,7 +105,9 @@ export type UserAppData = {
   onboardingCompleted: boolean;
   selectedGoals: string[];
   quizAnswers: QuizAnswers;
+  careerTest?: CareerTestResult | null;
   path: UserPath;
+  desiredPath?: DesiredPath | null;
   portfolio: PortfolioDraft;
   savedOpportunities: string[];
 };
@@ -100,6 +123,21 @@ export type UserAccount = {
   createdAt: string;
   updatedAt: string;
   data: UserAppData;
+};
+
+export type PortfolioGenerationContext = {
+  account?: {
+    name: string;
+    grade: string;
+    region: string;
+    language: Language;
+    createdAt: string;
+  };
+  selectedGoals?: string[];
+  quizAnswers?: QuizAnswers;
+  careerTest?: CareerTestResult | null;
+  path?: UserPath;
+  desiredPath?: DesiredPath | null;
 };
 
 export type AppJsonState = {

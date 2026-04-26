@@ -1,6 +1,7 @@
 import { mockUserPath } from "../data/path";
 import type {
   AppJsonState,
+  DesiredPath,
   Language,
   LoginInput,
   PortfolioDraft,
@@ -52,7 +53,9 @@ function createDefaultUserData(): UserAppData {
     onboardingCompleted: false,
     selectedGoals: [],
     quizAnswers: {},
+    careerTest: null,
     path: mockUserPath,
+    desiredPath: null,
     portfolio: {
       fields: initialPortfolioFields,
       output: createPortfolioOutput(initialPortfolioFields),
@@ -147,7 +150,7 @@ export async function registerUser(input: RegisterInput): Promise<UserAccount> {
   const existing = Object.values(state.users).find((user) => user.login === normalizedLogin);
 
   if (existing) {
-    throw new Error("Бұл login бұрын тіркелген / Этот login уже зарегистрирован");
+    throw new Error("This login is already registered.");
   }
 
   const now = new Date().toISOString();
@@ -194,7 +197,7 @@ export async function loginUser(input: LoginInput): Promise<UserAccount> {
   const user = Object.values(state.users).find((account) => account.login === normalizedLogin);
 
   if (!user || user.passwordHash !== (await hashPassword(input.password))) {
-    throw new Error("Login немесе құпиясөз қате / Неверный login или пароль");
+    throw new Error("Invalid login or password.");
   }
 
   saveAppState({ ...state, currentUserId: user.id });
@@ -270,6 +273,16 @@ export function updatePortfolio(portfolio: PortfolioDraft) {
   }));
 }
 
+export function updateDesiredPath(desiredPath: DesiredPath | null) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      desiredPath
+    }
+  }));
+}
+
 export function updateSavedOpportunities(savedOpportunities: string[]) {
   return updateCurrentUser((user) => ({
     ...user,
@@ -289,13 +302,119 @@ export function saveUserPath(path: UserPath) {
 }
 
 export function refreshSavedPath() {
-  const nextPath = {
-    ...mockUserPath,
-    savedAt: new Date().toISOString()
-  };
+  const currentUser = getCurrentUser();
+  const nextPath = createRecommendedPath(currentUser);
 
   updateUserPath(nextPath, true);
   return nextPath;
+}
+
+function createRecommendedPath(user: UserAccount | null): UserPath {
+  const answers = user?.data.quizAnswers ?? {};
+  const selectedGoals = user?.data.selectedGoals ?? [];
+  const interest = answers.interests ?? "";
+  const experience = answers.experience ?? "";
+  const goal = answers.goal ?? "";
+  const access = answers.access ?? "";
+  const name = user?.name || mockUserPath.name;
+  const grade = user?.grade || "9th grade";
+  const region = user?.region || "Kazakhstan";
+
+  const wantsGrant = goal === "Apply for a grant" || selectedGoals.includes("grants");
+  const wantsContest = goal === "Win a contest" || experience === "Olympiad";
+  const limitedAccess = access === "Phone only" || access === "Weak internet";
+
+  const profile =
+    interest === "Robotics" || interest === "Physics"
+      ? {
+          summary: "Robotics + Engineering",
+          interests: [interest || "Robotics", "Physics"],
+          directions: ["Robotics", "Automation", "Engineering"],
+          skills: ["Physics", "IoT basics", "CAD"],
+          project: "Sensor prototype / demo day",
+          opportunity: wantsGrant ? "Nazarbayev University grant route" : "Satbayev engineering path",
+          recommendedGraphNodeIds: wantsGrant
+            ? ["you", "robotics-engineer", "robotics-iot", "robotics-sensor", "nu"]
+            : ["you", "robotics-engineer", "robotics-iot", "robotics-sensor", "satbayev"]
+        }
+      : interest === "Business" || selectedGoals.includes("portfolio")
+        ? {
+            summary: "Software + Product",
+            interests: [interest || "IT", "Business"],
+            directions: ["Software Engineering", "Product", "Information Systems"],
+            skills: ["Web basics", "Backend/API", "Product thinking"],
+            project: "Local event registration app",
+            opportunity: "KBTU industry track",
+            recommendedGraphNodeIds: ["you", "software-engineer", "software-product", "software-hackathon", "kbtu"]
+          }
+        : {
+            summary: wantsContest ? "AI + Olympiad track" : "AI + Engineering",
+            interests: [interest || "IT", "Math"],
+            directions: ["AI", "Data Science", "Computer Science"],
+            skills: wantsContest ? ["Math", "Python", "English"] : ["Python", "Math", "English"],
+            project: wantsContest ? "Olympiad preparation portfolio" : "Telegram bot / data dashboard",
+            opportunity: wantsGrant ? "Nazarbayev University grant route" : "Astana IT University",
+            recommendedGraphNodeIds: wantsGrant
+              ? ["you", "ai-engineer", "ai-math", "ai-olympiad", "nu"]
+              : ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"]
+          };
+
+  return {
+    ...mockUserPath,
+    name,
+    summary: profile.summary,
+    interests: profile.interests,
+    directions: profile.directions,
+    skills: profile.skills,
+    project: profile.project,
+    opportunity: profile.opportunity,
+    recommendedGraphNodeIds: profile.recommendedGraphNodeIds,
+    savedAt: new Date().toISOString(),
+    nodes: [
+      {
+        id: "now",
+        title: "Current profile",
+        description: `${grade}, ${region}, ${limitedAccess ? "low-internet path" : "stable access path"}`,
+        tone: "start"
+      },
+      {
+        id: "interests",
+        title: `Interests: ${profile.interests.join(", ")}`,
+        description: "Based on the diagnostic answers and selected goals.",
+        tone: "interest"
+      },
+      {
+        id: "directions",
+        title: `Directions: ${profile.directions.join(", ")}`,
+        description: "The graph opens the strongest route first, but alternatives stay available.",
+        tone: "direction"
+      },
+      {
+        id: "skills",
+        title: `Skills: ${profile.skills.join(", ")}`,
+        description: "These are the first skills that should become portfolio evidence.",
+        tone: "skill"
+      },
+      {
+        id: "project",
+        title: `Project: ${profile.project}`,
+        description: "A project vertex can turn into proof for admissions and scholarships.",
+        tone: "project"
+      },
+      {
+        id: "opportunity",
+        title: `Target: ${profile.opportunity}`,
+        description: "The endpoint can be compared by cost, funding options and fit.",
+        tone: "opportunity"
+      },
+      {
+        id: "portfolio",
+        title: "Portfolio",
+        description: "AI can package the selected path, evidence and results into an application draft.",
+        tone: "portfolio"
+      }
+    ]
+  };
 }
 
 function normalizeLogin(login: string) {

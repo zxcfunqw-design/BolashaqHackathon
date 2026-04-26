@@ -7,16 +7,26 @@ import {
   logoutUser,
   refreshCurrentUserFromBackend,
   refreshSavedPath,
+  updateDesiredPath,
   updatePortfolio,
   updateQuizAnswers,
   updateSavedOpportunities,
   updateSelectedGoals,
   updateUserLanguage
 } from "./lib/storage";
-import type { Language, MainTab, PortfolioDraft, QuizAnswers, UserAccount, UserPath } from "./types";
+import type {
+  DesiredPath,
+  Language,
+  MainTab,
+  PortfolioDraft,
+  PortfolioGenerationContext,
+  QuizAnswers,
+  UserAccount,
+  UserPath
+} from "./types";
 import { AuthScreen } from "./screens/AuthScreen";
-import { DashboardScreen } from "./screens/DashboardScreen";
 import { GoalSelectionScreen } from "./screens/GoalSelectionScreen";
+import { HomeScreen } from "./screens/HomeScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { OpportunitiesScreen } from "./screens/OpportunitiesScreen";
 import { PathGraphScreen } from "./screens/PathGraphScreen";
@@ -40,6 +50,7 @@ export function App() {
     () => currentUser?.data.selectedGoals ?? []
   );
   const [path, setPath] = useState<UserPath>(() => loadUserPath());
+  const portfolioContext = currentUser ? createPortfolioContext(currentUser) : undefined;
 
   const syncCurrentUser = () => {
     const nextUser = getCurrentUser();
@@ -95,6 +106,14 @@ export function App() {
   const handlePortfolioChange = (portfolio: PortfolioDraft) => {
     const updated = updatePortfolio(portfolio);
     if (updated) setCurrentUser(updated);
+  };
+
+  const handleDesiredPathChange = (desiredPath: DesiredPath | null) => {
+    const updated = updateDesiredPath(desiredPath);
+    if (updated) {
+      setCurrentUser(updated);
+      setPath(updated.data.path);
+    }
   };
 
   const handleSaveOpportunity = (id: string) => {
@@ -167,7 +186,15 @@ export function App() {
       return <LoadingScreen />;
     }
 
-    if (activeTab === "path") return <PathGraphScreen path={path} />;
+    if (activeTab === "path") {
+      return (
+        <PathGraphScreen
+          desiredPath={currentUser?.data.desiredPath ?? null}
+          onDesiredPathChange={handleDesiredPathChange}
+          path={path}
+        />
+      );
+    }
     if (activeTab === "plan") return <PlanScreen />;
     if (activeTab === "opportunities") {
       return (
@@ -181,13 +208,24 @@ export function App() {
     if (activeTab === "portfolio" && currentUser) {
       return (
         <PortfolioScreen
+          context={portfolioContext}
           portfolio={currentUser.data.portfolio}
+          desiredPath={currentUser.data.desiredPath ?? null}
           onPortfolioChange={handlePortfolioChange}
         />
       );
     }
 
-    return <DashboardScreen path={path} onNavigate={setActiveTab} />;
+    return currentUser ? (
+      <HomeScreen
+        desiredPath={currentUser.data.desiredPath ?? null}
+        path={path}
+        portfolioContext={portfolioContext}
+        user={currentUser}
+        onNavigate={setActiveTab}
+        onRetakeDiagnostic={() => setFlowStep("quiz")}
+      />
+    ) : null;
   };
 
   const title = flowStep === "auth" ? "Account" : flowStep === "app" ? tabTitle(activeTab) : "QadamGraph";
@@ -209,7 +247,7 @@ export function App() {
 
 function tabTitle(tab: MainTab) {
   const titles: Record<MainTab, string> = {
-    home: "Dashboard",
+    home: "Главная",
     path: "My Path",
     plan: "90-Day Plan",
     opportunities: "Opportunities",
@@ -217,4 +255,21 @@ function tabTitle(tab: MainTab) {
   };
 
   return titles[tab];
+}
+
+function createPortfolioContext(user: UserAccount): PortfolioGenerationContext {
+  return {
+    account: {
+      name: user.name,
+      grade: user.grade,
+      region: user.region,
+      language: user.language,
+      createdAt: user.createdAt
+    },
+    selectedGoals: user.data.selectedGoals,
+    quizAnswers: user.data.quizAnswers,
+    careerTest: user.data.careerTest ?? null,
+    path: user.data.path,
+    desiredPath: user.data.desiredPath ?? null
+  };
 }

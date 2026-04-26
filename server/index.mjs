@@ -5,14 +5,33 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = dirname(__dirname);
+
+await loadEnvFiles(projectRoot);
+
 const dbPath = join(__dirname, "data", "qadamgraph.db.json");
 const port = Number(process.env.PORT ?? 8787);
 const allowedOrigin = process.env.CORS_ORIGIN ?? "http://127.0.0.1:5173";
+const openAiApiKey = process.env.OPENAI_API_KEY;
+const openAiModel = process.env.OPENAI_MODEL ?? "gpt-5.2";
+const openAiResponsesUrl = "https://api.openai.com/v1/responses";
+
+const portfolioInstructions = [
+  "You are an admissions portfolio coach for school students in Kazakhstan.",
+  "Create a concise, honest university application portfolio draft from the student's data.",
+  "Follow real admissions portfolio patterns: applicant snapshot, target program fit, curated evidence, project context, personal role, measurable result, skills, and next evidence to collect.",
+  "Use registration data, selected goals, diagnostic answers, future career-test results, selected graph path, budget and funding options as context.",
+  "Treat diagnostic and career-test results as planning signals, not as proof of ability or a guaranteed profession.",
+  "Do not invent awards, grades, schools, certificates, scores, universities, test results or outcomes.",
+  "If evidence is missing, write it as a next item to collect instead of pretending it exists.",
+  "Return only the final portfolio text."
+].join(" ");
 
 const defaultUserData = () => ({
   onboardingCompleted: false,
   selectedGoals: [],
   quizAnswers: {},
+  careerTest: null,
   path: {
     name: "Aruzhan",
     summary: "IT + Engineering",
@@ -21,9 +40,11 @@ const defaultUserData = () => ({
     skills: ["Python", "Math", "English"],
     project: "Telegram bot / sensor prototype",
     opportunity: "STEM Hackathon",
+    recommendedGraphNodeIds: ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"],
     savedAt: new Date().toISOString(),
     nodes: []
   },
+  desiredPath: null,
   portfolio: {
     fields: {
       studentName: "Aruzhan",
@@ -53,6 +74,31 @@ const defaultUserData = () => ({
   },
   savedOpportunities: []
 });
+
+async function loadEnvFiles(rootDir) {
+  for (const fileName of [".env.local", ".env"]) {
+    try {
+      const raw = await readFile(join(rootDir, fileName), "utf8");
+
+      raw.split(/\r?\n/).forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) return;
+
+        const separatorIndex = trimmed.indexOf("=");
+        if (separatorIndex === -1) return;
+
+        const key = trimmed.slice(0, separatorIndex).trim();
+        const value = trimmed.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, "");
+
+        if (key && process.env[key] === undefined) {
+          process.env[key] = value;
+        }
+      });
+    } catch {
+      // Env files are optional in local demos.
+    }
+  }
+}
 
 async function loadDb() {
   try {
@@ -151,6 +197,109 @@ function sendError(res, status, message) {
   send(res, status, { error: message });
 }
 
+function buildPortfolioPrompt(fields = {}, context = {}) {
+  return [
+    `Language: ${fields.language === "kk" ? "Kazakh" : fields.language === "en" ? "English" : "Russian"}`,
+    "",
+    "[Registration data]",
+    `Registered name: ${context.account?.name || fields.studentName || "Not provided"}`,
+    `Registered grade: ${context.account?.grade || fields.grade || "Not provided"}`,
+    `Registered region/location: ${context.account?.region || fields.school || "Not provided"}`,
+    `Interface language: ${context.account?.language || "Not provided"}`,
+    "",
+    "[Diagnostic and future career-test context]",
+    `Selected goals: ${formatList(context.selectedGoals)}`,
+    `Current diagnostic answers: ${formatRecord(context.quizAnswers)}`,
+    `Future career test result: ${formatCareerTest(context)}`,
+    "",
+    "[Graph and financial path]",
+    `Recommended path summary: ${context.path?.summary || "Not provided"}`,
+    `Recommended skills: ${formatList(context.path?.skills)}`,
+    `Recommended project: ${context.path?.project || "Not provided"}`,
+    `Recommended opportunity: ${context.path?.opportunity || "Not provided"}`,
+    `Selected desired path: ${context.desiredPath?.pathTitles?.join(" -> ") || "Not selected"}`,
+    `Selected university endpoint: ${context.desiredPath?.targetTitle || "Not selected"}`,
+    `Estimated path budget KZT: ${context.desiredPath?.totalCostKzt ?? "Not calculated"}`,
+    `Funding options: ${formatList(context.desiredPath?.fundingOptions)}`,
+    "",
+    "[Manual portfolio fields]",
+    `Student name: ${fields.studentName || "Not provided"}`,
+    `Grade: ${fields.grade || "Not provided"}`,
+    `School/location: ${fields.school || "Not provided"}`,
+    `Career goal: ${fields.careerGoal || "Not provided"}`,
+    `Target university: ${fields.targetUniversity || "Not provided"}`,
+    `Target program: ${fields.targetProgram || "Not provided"}`,
+    `Academic strengths: ${fields.academicStrengths || "Not provided"}`,
+    `What the student did: ${fields.did || "Not provided"}`,
+    `Where the student participated: ${fields.participated || "Not provided"}`,
+    `What the student learned: ${fields.learned || "Not provided"}`,
+    `Result: ${fields.result || "Not provided"}`,
+    `Activities and leadership: ${fields.activities || "Not provided"}`,
+    `Awards/certificates: ${fields.awards || "Not provided"}`,
+    `Community impact: ${fields.communityImpact || "Not provided"}`,
+    `Evidence/proof available: ${fields.evidence || "Not provided"}`,
+    `Next step: ${fields.nextStep || "Not provided"}`,
+    "",
+    "Write 180-240 words.",
+    "Use these sections: Applicant snapshot, Target fit, Evidence highlights, Project story, Skills, Next evidence.",
+    "Each achievement should connect to proof, context, role, result or next evidence.",
+    "If diagnostic answers conflict with manual fields, prefer the manual fields and use the diagnostic only as a planning signal."
+  ].join("\n");
+}
+
+function formatList(values) {
+  return Array.isArray(values) && values.length ? values.join(", ") : "Not provided";
+}
+
+function formatRecord(values) {
+  if (!values || typeof values !== "object" || Object.keys(values).length === 0) {
+    return "Not provided";
+  }
+
+  return Object.entries(values)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("; ");
+}
+
+function formatCareerTest(context = {}) {
+  const test = context.careerTest;
+  if (!test) return "Not completed yet; use current diagnostic answers only as a planning signal.";
+
+  return [
+    test.resultTitle ? `result: ${test.resultTitle}` : "",
+    Array.isArray(test.recommendedProfessions) && test.recommendedProfessions.length
+      ? `professions: ${test.recommendedProfessions.join(", ")}`
+      : "",
+    Array.isArray(test.strengths) && test.strengths.length ? `strengths: ${test.strengths.join(", ")}` : "",
+    Array.isArray(test.risks) && test.risks.length ? `risks: ${test.risks.join(", ")}` : "",
+    test.scores ? `scores: ${formatScores(test.scores)}` : "",
+    test.answers ? `answers: ${formatRecord(test.answers)}` : ""
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
+function formatScores(values) {
+  if (!values || typeof values !== "object") return "Not provided";
+
+  return Object.entries(values)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+}
+
+function extractOpenAiText(data) {
+  if (typeof data?.output_text === "string") return data.output_text.trim();
+
+  return (
+    data?.output
+      ?.flatMap((item) => item.content ?? [])
+      .filter((content) => content.type === "output_text" && typeof content.text === "string")
+      .map((content) => content.text)
+      .join("\n")
+      .trim() ?? ""
+  );
+}
+
 const server = createServer(async (req, res) => {
   if (req.method === "OPTIONS") {
     send(res, 204, {});
@@ -162,6 +311,62 @@ const server = createServer(async (req, res) => {
   try {
     if (req.method === "GET" && url.pathname === "/api/health") {
       send(res, 200, { ok: true });
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/portfolio") {
+      if (!openAiApiKey) {
+        sendError(res, 500, "OpenAI key is not configured");
+        return;
+      }
+
+      const body = await getRequestBody(req);
+      const fields = body.fields;
+      const context = body.context ?? {};
+
+      if (!fields) {
+        sendError(res, 400, "Portfolio fields are missing");
+        return;
+      }
+
+      const openAiResponse = await fetch(openAiResponsesUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAiApiKey}`
+        },
+        body: JSON.stringify({
+          model: openAiModel,
+          store: false,
+          instructions: portfolioInstructions,
+          input: buildPortfolioPrompt(fields, context)
+        })
+      });
+
+      const payload = await openAiResponse.json().catch(() => ({}));
+
+      if (!openAiResponse.ok) {
+        sendError(
+          res,
+          openAiResponse.status,
+          payload?.error?.message ?? `OpenAI request failed with status ${openAiResponse.status}`
+        );
+        return;
+      }
+
+      const text = extractOpenAiText(payload);
+
+      if (!text) {
+        sendError(res, 502, "OpenAI response did not include text output");
+        return;
+      }
+
+      send(res, 200, {
+        text,
+        source: "openai",
+        model: openAiModel,
+        createdAt: new Date().toISOString()
+      });
       return;
     }
 

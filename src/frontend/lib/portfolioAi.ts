@@ -1,4 +1,4 @@
-import type { PortfolioFields, PortfolioLanguage } from "../types";
+import type { PortfolioFields, PortfolioGenerationContext, PortfolioLanguage } from "../types";
 
 export type GeneratedPortfolioDraft = {
   text: string;
@@ -8,9 +8,11 @@ export type GeneratedPortfolioDraft = {
   warning?: string;
 };
 
-const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_OPENAI_MODEL = "gpt-5.2";
-const PORTFOLIO_API_URL = "/api/portfolio";
+const DEFAULT_PORTFOLIO_API_URL = import.meta.env.DEV
+  ? "http://127.0.0.1:8787/api/portfolio"
+  : "/api/portfolio";
+const PORTFOLIO_API_URL = import.meta.env.VITE_PORTFOLIO_API_URL ?? DEFAULT_PORTFOLIO_API_URL;
 
 const languageName: Record<PortfolioLanguage, string> = {
   ru: "Russian",
@@ -22,20 +24,25 @@ const apiInstructions = [
   "You are an admissions portfolio coach for school students in Kazakhstan.",
   "Create a concise, honest university application portfolio draft from the student's data.",
   "Follow real admissions portfolio patterns: applicant snapshot, target program fit, curated evidence, project context, personal role, measurable result, skills, and next evidence to collect.",
-  "Do not invent awards, grades, schools, certificates, scores, or universities.",
+  "Use registration data, selected goals, diagnostic answers, future career-test results, selected graph path, budget and funding options as context.",
+  "Treat diagnostic and career-test results as planning signals, not as proof of ability or a guaranteed profession.",
+  "Do not invent awards, grades, schools, certificates, scores, universities, test results or outcomes.",
   "If evidence is missing, write it as a next item to collect instead of pretending it exists.",
   "Use a confident but age-appropriate tone.",
   "Return only the final portfolio text. Markdown headings are allowed."
 ].join(" ");
 
-export async function generatePortfolioDraft(fields: PortfolioFields): Promise<GeneratedPortfolioDraft> {
+export async function generatePortfolioDraft(
+  fields: PortfolioFields,
+  context?: PortfolioGenerationContext
+): Promise<GeneratedPortfolioDraft> {
   try {
     const response = await fetch(PORTFOLIO_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ fields })
+      body: JSON.stringify({ fields, context })
     });
 
     if (!response.ok) {
@@ -52,16 +59,20 @@ export async function generatePortfolioDraft(fields: PortfolioFields): Promise<G
     return draft;
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI API request failed.";
-    return createLocalDraft(fields, `AI API unavailable. Local draft used instead. ${message}`);
+    return createLocalDraft(fields, context, `AI API unavailable. Local draft used instead. ${message}`);
   }
 }
 
-export function createOpenAiPortfolioRequest(fields: PortfolioFields, model = DEFAULT_OPENAI_MODEL) {
+export function createOpenAiPortfolioRequest(
+  fields: PortfolioFields,
+  model = DEFAULT_OPENAI_MODEL,
+  context?: PortfolioGenerationContext
+) {
   return {
     model,
     store: false,
     instructions: apiInstructions,
-    input: buildPrompt(fields)
+    input: buildPrompt(fields, context)
   };
 }
 
@@ -78,9 +89,32 @@ export function extractOpenAiResponseText(data: unknown) {
   return extractResponseText(data);
 }
 
-function buildPrompt(fields: PortfolioFields) {
+function buildPrompt(fields: PortfolioFields, context?: PortfolioGenerationContext) {
   return [
     `Language: ${languageName[fields.language]}`,
+    "",
+    "[Registration data]",
+    `Registered name: ${context?.account?.name || fields.studentName || "Not provided"}`,
+    `Registered grade: ${context?.account?.grade || fields.grade || "Not provided"}`,
+    `Registered region/location: ${context?.account?.region || fields.school || "Not provided"}`,
+    `Interface language: ${context?.account?.language || "Not provided"}`,
+    "",
+    "[Diagnostic and future career-test context]",
+    `Selected goals: ${formatList(context?.selectedGoals)}`,
+    `Current diagnostic answers: ${formatRecord(context?.quizAnswers)}`,
+    `Future career test result: ${formatCareerTest(context)}`,
+    "",
+    "[Graph and financial path]",
+    `Recommended path summary: ${context?.path?.summary || "Not provided"}`,
+    `Recommended skills: ${formatList(context?.path?.skills)}`,
+    `Recommended project: ${context?.path?.project || "Not provided"}`,
+    `Recommended opportunity: ${context?.path?.opportunity || "Not provided"}`,
+    `Selected desired path: ${context?.desiredPath?.pathTitles?.join(" -> ") || "Not selected"}`,
+    `Selected university endpoint: ${context?.desiredPath?.targetTitle || "Not selected"}`,
+    `Estimated path budget KZT: ${context?.desiredPath?.totalCostKzt ?? "Not calculated"}`,
+    `Funding options: ${formatList(context?.desiredPath?.fundingOptions)}`,
+    "",
+    "[Manual portfolio fields]",
     `Student name: ${fields.studentName || "Not provided"}`,
     `Grade: ${fields.grade || "Not provided"}`,
     `School/location: ${fields.school || "Not provided"}`,
@@ -100,7 +134,8 @@ function buildPrompt(fields: PortfolioFields) {
     "",
     "Write 180-240 words.",
     "Use these sections: Applicant snapshot, Target fit, Evidence highlights, Project story, Skills, Next evidence.",
-    "Each achievement should connect to proof, context, role, or result.",
+    "Each achievement should connect to proof, context, role, result or next evidence.",
+    "If diagnostic answers conflict with manual fields, prefer the manual fields and use the diagnostic only as a planning signal.",
     "Make it useful for a university application, scholarship portfolio, or admissions interview."
   ].join("\n");
 }
@@ -139,89 +174,170 @@ async function readError(response: Response) {
   }
 }
 
-function createLocalDraft(fields: PortfolioFields, warning: string): GeneratedPortfolioDraft {
+function createLocalDraft(
+  fields: PortfolioFields,
+  context: PortfolioGenerationContext | undefined,
+  warning: string
+): GeneratedPortfolioDraft {
   return {
-    text: localTemplates[fields.language](fields),
+    text: localTemplates[fields.language](fields, context),
     source: "local",
     createdAt: new Date().toISOString(),
     warning
   };
 }
 
-const localTemplates: Record<PortfolioLanguage, (fields: PortfolioFields) => string> = {
-  ru: (fields) =>
-    [
-      `## Профиль кандидата`,
-      `${fields.studentName || "Ученик"}${fields.grade ? `, ${fields.grade}` : ""}${
-        fields.school ? `, ${fields.school}` : ""
-      } стремится развиваться в направлении "${fields.careerGoal || "выбранная профессия"}".`,
+function formatList(values?: string[]) {
+  return values?.length ? values.join(", ") : "Not provided";
+}
+
+function formatRecord(values?: Record<string, string>) {
+  if (!values || Object.keys(values).length === 0) return "Not provided";
+
+  return Object.entries(values)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("; ");
+}
+
+function formatCareerTest(context?: PortfolioGenerationContext) {
+  const test = context?.careerTest;
+  if (!test) return "Not completed yet; use current diagnostic answers only as a planning signal.";
+
+  return [
+    test.resultTitle ? `result: ${test.resultTitle}` : "",
+    test.recommendedProfessions?.length ? `professions: ${test.recommendedProfessions.join(", ")}` : "",
+    test.strengths?.length ? `strengths: ${test.strengths.join(", ")}` : "",
+    test.risks?.length ? `risks: ${test.risks.join(", ")}` : "",
+    test.scores ? `scores: ${formatScores(test.scores)}` : "",
+    test.answers ? `answers: ${formatRecord(test.answers)}` : ""
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
+function formatScores(values: Record<string, number>) {
+  return Object.entries(values)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+}
+
+function resolveProfile(fields: PortfolioFields, context?: PortfolioGenerationContext) {
+  return {
+    studentName: fields.studentName || context?.account?.name || "Student",
+    grade: fields.grade || context?.account?.grade || "grade not provided",
+    school: fields.school || context?.account?.region || "location not provided",
+    careerGoal:
+      fields.careerGoal ||
+      context?.careerTest?.resultTitle ||
+      context?.path?.summary ||
+      "chosen career direction",
+    targetUniversity: fields.targetUniversity || context?.desiredPath?.targetTitle || "",
+    targetProgram: fields.targetProgram || context?.path?.summary || "relevant undergraduate program",
+    academicStrengths:
+      fields.academicStrengths || context?.path?.skills?.join(", ") || "subject interest and independent learning",
+    nextStep:
+      fields.nextStep ||
+      (context?.desiredPath?.pathTitles?.length
+        ? `Prepare proof for: ${context.desiredPath.pathTitles.join(" -> ")}`
+        : "collect stronger project evidence")
+  };
+}
+
+const localTemplates: Record<
+  PortfolioLanguage,
+  (fields: PortfolioFields, context?: PortfolioGenerationContext) => string
+> = {
+  ru: (fields, context) => {
+    const profile = resolveProfile(fields, context);
+
+    return [
+      "## Профиль кандидата",
+      `${profile.studentName}, ${profile.grade}, ${profile.school}. Цель: ${profile.careerGoal}.`,
       "",
-      `## Соответствие программе`,
-      `Целевая траектория: ${fields.targetProgram || fields.careerGoal || "подходящая программа"}${
-        fields.targetUniversity ? ` в ${fields.targetUniversity}` : ""
-      }. Академическая база: ${fields.academicStrengths || "предметные интересы и самостоятельное обучение"}.`,
+      "## Соответствие программе",
+      `Целевая программа: ${profile.targetProgram}${
+        profile.targetUniversity ? `, ${profile.targetUniversity}` : ""
+      }. Академическая база: ${profile.academicStrengths}.`,
       "",
-      `## Доказательства`,
-      `Ключевой опыт: ${fields.did || "учебный проект"} в рамках ${
-        fields.participated || "школьной или внешней активности"
-      }. Роль и результат: ${fields.result || "получен первый практический результат и обратная связь"}.`,
+      "## Доказательства",
+      `Ключевой опыт: ${fields.did || "учебный проект"} через ${
+        fields.participated || "школьную или внешнюю активность"
+      }. Роль и результат: ${fields.result || "первый практический результат и обратная связь"}.`,
+      `Активности: ${fields.activities || "добавить кружки, конкурсы, волонтерство или лидерские роли"}. Награды: ${
+        fields.awards || "приложить подтверждения, если они есть"
+      }.`,
       "",
-      `Дополнительные активности: ${fields.activities || "нужно добавить кружки, волонтерство, конкурсы или лидерские роли"}. Награды и сертификаты: ${fields.awards || "нужно приложить подтверждения, если они есть"}.`,
+      "## Проект и навыки",
+      `Проект помог развить: ${fields.learned || "самообучение, планирование и презентацию результата"}. Влияние: ${
+        fields.communityImpact || "описать, кому помог проект и какую проблему решил"
+      }.`,
       "",
-      `## Проект и навыки`,
-      `Работа помогла развить ${fields.learned || "самостоятельное обучение, планирование и презентацию результата"}. Влияние на сообщество: ${fields.communityImpact || "пока нужно описать, кому помог проект и какую проблему решил"}.`,
+      "## Следующие доказательства",
+      `${fields.evidence || "Собрать фото, ссылку на проект, сертификаты, отзыв учителя и описание личной роли."} Следующий шаг: ${
+        profile.nextStep
+      }.`
+    ].join("\n");
+  },
+  kk: (fields, context) => {
+    const profile = resolveProfile(fields, context);
+
+    return [
+      "## Үміткер профилі",
+      `${profile.studentName}, ${profile.grade}, ${profile.school}. Мақсаты: ${profile.careerGoal}.`,
       "",
-      `## Следующие доказательства`,
-      `${fields.evidence || "Собрать фото, ссылку на проект, сертификаты, отзыв учителя и короткое описание личной роли."} Следующий шаг: ${fields.nextStep || "улучшить проект и подготовить его к подаче в портфолио"}.`
-    ].join("\n"),
-  kk: (fields) =>
-    [
-      `## Үміткер профилі`,
-      `${fields.studentName || "Оқушы"}${fields.grade ? `, ${fields.grade}` : ""}${
-        fields.school ? `, ${fields.school}` : ""
-      } "${fields.careerGoal || "таңдалған мамандық"}" бағыты бойынша дамуға ұмтылады.`,
+      "## Бағдарламаға сәйкестік",
+      `Мақсатты бағдарлама: ${profile.targetProgram}${
+        profile.targetUniversity ? `, ${profile.targetUniversity}` : ""
+      }. Академиялық негізі: ${profile.academicStrengths}.`,
       "",
-      `## Бағдарламаға сәйкестік`,
-      `Мақсатты бағыт: ${fields.targetProgram || fields.careerGoal || "сәйкес бағдарлама"}${
-        fields.targetUniversity ? `, ${fields.targetUniversity}` : ""
-      }. Академиялық негізі: ${fields.academicStrengths || "пәндік қызығушылықтар және өздігінен оқу"}.`,
-      "",
-      `## Дәлелдер`,
-      `Негізгі тәжірибе: ${fields.did || "оқу жобасы"} және ${
+      "## Дәлелдер",
+      `Негізгі тәжірибе: ${fields.did || "оқу жобасы"} арқылы ${
         fields.participated || "мектептік немесе сыртқы белсенділік"
-      }. Рөлі мен нәтижесі: ${fields.result || "алғашқы практикалық нәтиже мен кері байланыс алды"}.`,
+      }. Рөлі мен нәтижесі: ${fields.result || "алғашқы практикалық нәтиже және кері байланыс"}.`,
+      `Белсенділіктер: ${fields.activities || "үйірмелер, волонтерлік, конкурстар немесе лидерлік рөлдер"}. Марапаттар: ${
+        fields.awards || "бар болса, дәлелдерін тіркеу керек"
+      }.`,
       "",
-      `Қосымша белсенділіктер: ${fields.activities || "үйірмелер, волонтерлік, конкурстар немесе лидерлік рөлдерді қосу керек"}. Марапаттар мен сертификаттар: ${fields.awards || "бар болса, дәлелдерін тіркеу керек"}.`,
+      "## Жоба және дағдылар",
+      `Жұмыс ${fields.learned || "өздігінен оқу, жоспарлау және нәтижені түсіндіру"} дағдыларын дамытты. Әсері: ${
+        fields.communityImpact || "жобаның кімге көмектескенін және қандай мәселені шешкенін нақтылау"
+      }.`,
       "",
-      `## Жоба және дағдылар`,
-      `Бұл жұмыс ${fields.learned || "өздігінен оқу, жоспарлау және нәтижені түсіндіру"} дағдыларын дамытты. Қоғамға әсері: ${fields.communityImpact || "жобаның кімге көмектескенін және қандай мәселені шешкенін нақтылау керек"}.`,
+      "## Келесі дәлелдер",
+      `${fields.evidence || "Фото, жоба сілтемесі, сертификаттар, мұғалім пікірі және жеке рөлдің қысқаша сипаттамасын жинау."} Келесі қадам: ${
+        profile.nextStep
+      }.`
+    ].join("\n");
+  },
+  en: (fields, context) => {
+    const profile = resolveProfile(fields, context);
+
+    return [
+      "## Applicant snapshot",
+      `${profile.studentName}, ${profile.grade}, ${profile.school}, is building a path toward ${profile.careerGoal}.`,
       "",
-      `## Келесі дәлелдер`,
-      `${fields.evidence || "Фото, жоба сілтемесі, сертификаттар, мұғалім пікірі және жеке рөлдің қысқаша сипаттамасын жинау."} Келесі қадам: ${fields.nextStep || "жобаны жақсартып, портфолиоға дайындау"}.`
-    ].join("\n"),
-  en: (fields) =>
-    [
-      `## Applicant snapshot`,
-      `${fields.studentName || "The student"}${fields.grade ? `, ${fields.grade}` : ""}${
-        fields.school ? `, ${fields.school}` : ""
-      }, is building a path toward ${fields.careerGoal || "the chosen career direction"}.`,
+      "## Target fit",
+      `Target path: ${profile.targetProgram}${
+        profile.targetUniversity ? ` at ${profile.targetUniversity}` : ""
+      }. Academic foundation: ${profile.academicStrengths}.`,
       "",
-      `## Target fit`,
-      `Target path: ${fields.targetProgram || fields.careerGoal || "a relevant program"}${
-        fields.targetUniversity ? ` at ${fields.targetUniversity}` : ""
-      }. Academic foundation: ${fields.academicStrengths || "subject interest and independent learning"}.`,
-      "",
-      `## Evidence highlights`,
+      "## Evidence highlights",
       `Main experience: ${fields.did || "a learning project"} through ${
         fields.participated || "a school or external activity"
       }. Role and result: ${fields.result || "the student created a first practical result and received feedback"}.`,
+      `Additional activities: ${fields.activities || "add clubs, volunteering, contests or leadership roles"}. Awards and certificates: ${
+        fields.awards || "attach proof if available"
+      }.`,
       "",
-      `Additional activities: ${fields.activities || "add clubs, volunteering, contests or leadership roles"}. Awards and certificates: ${fields.awards || "attach proof if available"}.`,
+      "## Project and skills",
+      `This work helped develop ${fields.learned || "self-learning, planning and explaining results"}. Community impact: ${
+        fields.communityImpact || "describe who benefited from the project and what problem it solved"
+      }.`,
       "",
-      `## Project and skills`,
-      `This work helped develop ${fields.learned || "self-learning, planning and explaining results"}. Community impact: ${fields.communityImpact || "describe who benefited from the project and what problem it solved"}.`,
-      "",
-      `## Next evidence`,
-      `${fields.evidence || "Collect photos, a project link, certificates, teacher feedback and a short description of the personal role."} Next step: ${fields.nextStep || "improve the project and prepare it for portfolio submission"}.`
-    ].join("\n")
+      "## Next evidence",
+      `${fields.evidence || "Collect photos, a project link, certificates, teacher feedback and a short description of the personal role."} Next step: ${
+        profile.nextStep
+      }.`
+    ].join("\n");
+  }
 };
