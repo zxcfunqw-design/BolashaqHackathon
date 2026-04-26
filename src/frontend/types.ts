@@ -18,6 +18,46 @@ export type QuizQuestion = {
 
 export type QuizAnswers = Record<string, string>;
 
+export type HollandType =
+  | "Realistic"
+  | "Investigative"
+  | "Artistic"
+  | "Social"
+  | "Enterprising"
+  | "Conventional";
+
+export type HollandOption = {
+  label: string;
+  score: number;
+};
+
+export type HollandQuestion = {
+  id: number;
+  text: string;
+  type: HollandType;
+  options: HollandOption[];
+};
+
+export type HollandTestData = {
+  test_info: {
+    title: string;
+    description: string;
+    scoring_model: string;
+  };
+  questions: HollandQuestion[];
+};
+
+export type HollandScores = Record<HollandType, number>;
+
+export type HollandResult = {
+  answers: Record<string, number>;
+  scores: HollandScores;
+  topTypes: HollandType[];
+  code: string;
+  agentPrompt: string;
+  completedAt: string;
+};
+
 export type PathNodeData = {
   id: string;
   title: string;
@@ -124,6 +164,7 @@ export type UserAppData = {
   onboardingCompleted: boolean;
   selectedGoals: string[];
   quizAnswers: QuizAnswers;
+  hollandResult: HollandResult | null;
   path: UserPath;
   portfolio: PortfolioDraft;
   graphTexts: Record<string, GraphAiText>;

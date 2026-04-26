@@ -1,10 +1,19 @@
-import { ArrowRight, BriefcaseBusiness, ClipboardCheck, MapPinned, Route, Trophy } from "lucide-react";
-import type { MainTab, UserPath } from "../types";
+import {
+  ArrowRight,
+  BrainCircuit,
+  BriefcaseBusiness,
+  ClipboardCheck,
+  MapPinned,
+  Route,
+  Trophy
+} from "lucide-react";
+import type { HollandResult, MainTab, UserPath } from "../types";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 
 type DashboardScreenProps = {
   path: UserPath;
+  hollandResult?: HollandResult | null;
   onNavigate: (tab: MainTab) => void;
 };
 
@@ -16,7 +25,9 @@ const dashboardItems = [
   { title: "Portfolio Draft", subtitle: "Ready to generate", tab: "portfolio" as MainTab, icon: BriefcaseBusiness, tone: "blue" }
 ] as const;
 
-export function DashboardScreen({ path, onNavigate }: DashboardScreenProps) {
+export function DashboardScreen({ path, hollandResult, onNavigate }: DashboardScreenProps) {
+  const topHollandTypes = hollandResult?.topTypes.join(" + ");
+
   return (
     <div className="space-y-4">
       <section className="rounded-[28px] bg-qadam-primary p-5 text-white shadow-soft">
@@ -33,6 +44,24 @@ export function DashboardScreen({ path, onNavigate }: DashboardScreenProps) {
       </section>
 
       <div className="grid gap-3">
+        {hollandResult ? (
+          <Card>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700">
+                  <BrainCircuit size={22} />
+                </div>
+                <div>
+                  <h3 className="font-bold">AI Agent Profile</h3>
+                  <p className="text-sm text-qadam-muted">
+                    Holland {hollandResult.code}: {topHollandTypes}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+
         {dashboardItems.map((item) => {
           const Icon = item.icon;
 

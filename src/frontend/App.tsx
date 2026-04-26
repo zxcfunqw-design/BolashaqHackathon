@@ -7,6 +7,7 @@ import {
   logoutUser,
   refreshCurrentUserFromBackend,
   refreshSavedPath,
+  updateHollandResult,
   updatePortfolio,
   updateGraphText,
   updateGraphExpansion,
@@ -18,6 +19,7 @@ import {
 import type {
   GeneratedGraphExpansion,
   GraphAiText,
+  HollandResult,
   Language,
   MainTab,
   PortfolioDraft,
@@ -28,6 +30,7 @@ import type {
 import { AuthScreen } from "./screens/AuthScreen";
 import { DashboardScreen } from "./screens/DashboardScreen";
 import { GoalSelectionScreen } from "./screens/GoalSelectionScreen";
+import { HollandTestScreen } from "./screens/HollandTestScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { OpportunitiesScreen } from "./screens/OpportunitiesScreen";
 import { PathGraphScreen } from "./screens/PathGraphScreen";
@@ -36,7 +39,7 @@ import { PortfolioScreen } from "./screens/PortfolioScreen";
 import { QuizScreen } from "./screens/QuizScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 
-type FlowStep = "auth" | "welcome" | "goals" | "quiz" | "loading" | "app";
+type FlowStep = "auth" | "welcome" | "goals" | "quiz" | "holland" | "loading" | "app";
 
 export function App() {
   const online = useOnlineStatus();
@@ -96,8 +99,14 @@ export function App() {
   };
 
   const finishDiagnostic = (answers: QuizAnswers) => {
-    setFlowStep("loading");
     updateQuizAnswers(answers);
+    syncCurrentUser();
+    setFlowStep("holland");
+  };
+
+  const finishOnboarding = (hollandResult: HollandResult | null) => {
+    setFlowStep("loading");
+    updateHollandResult(hollandResult);
     const nextPath = refreshSavedPath();
     setPath(nextPath);
     syncCurrentUser();
@@ -184,6 +193,16 @@ export function App() {
       );
     }
 
+    if (flowStep === "holland") {
+      return (
+        <HollandTestScreen
+          initialResult={currentUser?.data.hollandResult}
+          onComplete={finishOnboarding}
+          onSkip={() => finishOnboarding(null)}
+        />
+      );
+    }
+
     if (flowStep === "loading") {
       return <LoadingScreen />;
     }
@@ -221,7 +240,13 @@ export function App() {
       );
     }
 
-    return <DashboardScreen path={path} onNavigate={setActiveTab} />;
+    return (
+      <DashboardScreen
+        path={path}
+        hollandResult={currentUser?.data.hollandResult}
+        onNavigate={setActiveTab}
+      />
+    );
   };
 
   const title = flowStep === "auth" ? "Account" : flowStep === "app" ? tabTitle(activeTab) : "QadamGraph";

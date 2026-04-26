@@ -13,6 +13,7 @@ const defaultUserData = () => ({
   onboardingCompleted: false,
   selectedGoals: [],
   quizAnswers: {},
+  hollandResult: null,
   path: {
     name: "Aruzhan",
     summary: "IT + Engineering",

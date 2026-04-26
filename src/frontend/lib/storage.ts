@@ -7,6 +7,7 @@ import type {
   PortfolioDraft,
   GraphAiText,
   PortfolioFields,
+  HollandResult,
   QuizAnswers,
   RegisterInput,
   UserAccount,
@@ -54,6 +55,7 @@ function createDefaultUserData(): UserAppData {
     onboardingCompleted: false,
     selectedGoals: [],
     quizAnswers: {},
+    hollandResult: null,
     path: mockUserPath,
     portfolio: {
       fields: initialPortfolioFields,
@@ -253,6 +255,16 @@ export function updateQuizAnswers(quizAnswers: QuizAnswers) {
     data: {
       ...user.data,
       quizAnswers
+    }
+  }));
+}
+
+export function updateHollandResult(hollandResult: HollandResult | null) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      hollandResult
     }
   }));
 }

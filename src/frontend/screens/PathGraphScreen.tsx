@@ -85,9 +85,9 @@ export function PathGraphScreen({
   const [expandBusy, setExpandBusy] = useState(false);
   const [expandError, setExpandError] = useState("");
   const [expanded, setExpanded] = useState<ExpandedBranch>({
-    directionId: "ai-engineer",
-    skillId: "ai-python",
-    actionId: "ai-bot"
+    directionId: "python-programmer",
+    skillId: "python-basics",
+    actionId: "telegram-bot"
   });
   const lastPointer = useRef({ x: 0, y: 0 });
   const graphNodes = useMemo(
