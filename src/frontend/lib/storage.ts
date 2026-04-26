@@ -1,4 +1,5 @@
 import { mockUserPath } from "../data/path";
+import { fetchApiWithFallback } from "./apiClient";
 import type {
   AppJsonState,
   DesiredPath,
@@ -20,7 +21,6 @@ import type {
 
 const APP_KEY = "qadamgraph:app-json";
 const SESSION_KEY = "qadamgraph:session-token";
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
 
 export const initialPortfolioFields: PortfolioFields = {
   studentName: "Aruzhan",
@@ -578,7 +578,7 @@ async function apiRequest<T>(path: string, options: ApiRequestOptions): Promise<
   if (token) headers.Authorization = `Bearer ${token}`;
 
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetchApiWithFallback(path, {
       method: options.method,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined

@@ -7,12 +7,8 @@ import {
   Text,
   View
 } from "@react-pdf/renderer";
-import robotoCyrillicBold from "@fontsource/roboto/files/roboto-cyrillic-700-normal.woff";
-import robotoCyrillicRegular from "@fontsource/roboto/files/roboto-cyrillic-400-normal.woff";
-import robotoCyrillicExtBold from "@fontsource/roboto/files/roboto-cyrillic-ext-700-normal.woff";
-import robotoCyrillicExtRegular from "@fontsource/roboto/files/roboto-cyrillic-ext-400-normal.woff";
-import robotoLatinBold from "@fontsource/roboto/files/roboto-latin-700-normal.woff";
-import robotoLatinRegular from "@fontsource/roboto/files/roboto-latin-400-normal.woff";
+import arialBold from "../assets/fonts/arialbd.ttf";
+import arialRegular from "../assets/fonts/arial.ttf";
 import type { PortfolioDraft } from "../types";
 
 let pdfFontsRegistered = false;
@@ -180,57 +176,14 @@ export function PortfolioDocument({ portfolio }: PortfolioDocumentProps) {
 }
 
 function ensurePdfFonts() {
-  if (pdfFontsRegistered || typeof window === "undefined") return;
+  if (pdfFontsRegistered) return;
 
-  const stylesheet = `
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoLatinRegular}") format("woff");
-      font-style: normal;
-      font-weight: 400;
-      unicode-range: U+0000-00FF;
-    }
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoCyrillicRegular}") format("woff");
-      font-style: normal;
-      font-weight: 400;
-      unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+04D8-04D9, U+04E8-04E9, U+04AE-04AF, U+04A2-04A3, U+04BA-04BB, U+0406-0456;
-    }
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoCyrillicExtRegular}") format("woff");
-      font-style: normal;
-      font-weight: 400;
-      unicode-range: U+0460-052F, U+1C80-1C88, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-    }
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoLatinBold}") format("woff");
-      font-style: normal;
-      font-weight: 700;
-      unicode-range: U+0000-00FF;
-    }
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoCyrillicBold}") format("woff");
-      font-style: normal;
-      font-weight: 700;
-      unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+04D8-04D9, U+04E8-04E9, U+04AE-04AF, U+04A2-04A3, U+04BA-04BB, U+0406-0456;
-    }
-    @font-face {
-      font-family: "QadamPdf";
-      src: url("${robotoCyrillicExtBold}") format("woff");
-      font-style: normal;
-      font-weight: 700;
-      unicode-range: U+0460-052F, U+1C80-1C88, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-    }
-  `;
-
-  const stylesheetUrl = URL.createObjectURL(new Blob([stylesheet], { type: "text/css" }));
   Font.register({
     family: "QadamPdf",
-    src: stylesheetUrl
+    fonts: [
+      { src: arialRegular, fontWeight: 400 },
+      { src: arialBold, fontWeight: 700 }
+    ]
   });
 
   pdfFontsRegistered = true;

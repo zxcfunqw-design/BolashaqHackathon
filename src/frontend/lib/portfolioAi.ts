@@ -1,3 +1,4 @@
+import { fetchApiWithFallback } from "./apiClient";
 import type { PortfolioFields, PortfolioGenerationContext, PortfolioLanguage } from "../types";
 
 export type GeneratedPortfolioDraft = {
@@ -9,10 +10,8 @@ export type GeneratedPortfolioDraft = {
 };
 
 const DEFAULT_OPENAI_MODEL = "gpt-5.2";
-const DEFAULT_PORTFOLIO_API_URL = import.meta.env?.DEV
-  ? "http://127.0.0.1:8787/api/portfolio"
-  : "/api/portfolio";
-const PORTFOLIO_API_URL = import.meta.env?.VITE_PORTFOLIO_API_URL ?? DEFAULT_PORTFOLIO_API_URL;
+const PORTFOLIO_API_PATH = "/api/portfolio";
+const PORTFOLIO_API_URL = import.meta.env?.VITE_PORTFOLIO_API_URL;
 
 const languageName: Record<PortfolioLanguage, string> = {
   ru: "Russian",
@@ -37,13 +36,19 @@ export async function generatePortfolioDraft(
   context?: PortfolioGenerationContext
 ): Promise<GeneratedPortfolioDraft> {
   try {
-    const response = await fetch(PORTFOLIO_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await fetchApiWithFallback(
+      PORTFOLIO_API_PATH,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ fields, context })
       },
-      body: JSON.stringify({ fields, context })
-    });
+      {
+        overrideUrl: PORTFOLIO_API_URL
+      }
+    );
 
     if (!response.ok) {
       const details = await readError(response);
@@ -58,8 +63,7 @@ export async function generatePortfolioDraft(
 
     return draft;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "AI API request failed.";
-    return createLocalDraft(fields, context, `AI API unavailable. Local draft used instead. ${message}`);
+    return createLocalDraft(fields, context, formatPortfolioApiWarning(error));
   }
 }
 
@@ -173,6 +177,20 @@ async function readError(response: Response) {
   } catch {
     return "";
   }
+}
+
+function formatPortfolioApiWarning(error: unknown) {
+  const message = error instanceof Error ? error.message : "AI API request failed.";
+
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    return `AI API unavailable because the device is offline. Local draft used instead. ${message}`;
+  }
+
+  if (/Failed to fetch|NetworkError|Load failed/i.test(message)) {
+    return `AI API unavailable because the portfolio backend or dev proxy is not reachable. In local development, make sure the frontend on http://127.0.0.1:5173 and backend on http://127.0.0.1:8787 are both running. Local draft used instead. ${message}`;
+  }
+
+  return `AI API unavailable. Local draft used instead. ${message}`;
 }
 
 function createLocalDraft(

@@ -1,4 +1,5 @@
 import universities from "../data/universities.json";
+import { fetchApiWithFallback } from "./apiClient";
 import type {
   GeneratedGraphEdge,
   GeneratedGraphExpansion,
@@ -23,13 +24,11 @@ export type OpenAiGraphExpandRequest = GraphExpandRequest & {
   universities: typeof universities;
 };
 
-const GRAPH_EXPAND_API_URL = import.meta.env?.DEV
-  ? "http://127.0.0.1:8787/api/graph-expand"
-  : "/api/graph-expand";
+const GRAPH_EXPAND_API_PATH = "/api/graph-expand";
 
 export async function expandGraphWithAi(request: GraphExpandRequest): Promise<GeneratedGraphExpansion> {
   try {
-    const response = await fetch(GRAPH_EXPAND_API_URL, {
+    const response = await fetchApiWithFallback(GRAPH_EXPAND_API_PATH, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

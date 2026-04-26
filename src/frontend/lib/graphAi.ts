@@ -1,4 +1,5 @@
 import universities from "../data/universities.json";
+import { fetchApiWithFallback } from "./apiClient";
 import type { GraphAiText, Language, QuizAnswers, UserPath } from "../types";
 import type { UniversityGraphNode } from "../data/universityGraph";
 
@@ -14,13 +15,11 @@ export type OpenAiGraphTextRequest = GraphTextRequest & {
   universities: typeof universities;
 };
 
-const GRAPH_TEXT_API_URL = import.meta.env?.DEV
-  ? "http://127.0.0.1:8787/api/graph-text"
-  : "/api/graph-text";
+const GRAPH_TEXT_API_PATH = "/api/graph-text";
 
 export async function generateGraphText(request: GraphTextRequest): Promise<GraphAiText> {
   try {
-    const response = await fetch(GRAPH_TEXT_API_URL, {
+    const response = await fetchApiWithFallback(GRAPH_TEXT_API_PATH, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
