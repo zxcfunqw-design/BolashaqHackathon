@@ -41,7 +41,9 @@ export function GoalSelectionScreen({
               <div className="flex items-center gap-3">
                 <div
                   className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
-                    selected ? "bg-qadam-primary text-white" : "bg-emerald-50 text-qadam-primary"
+                    selected
+                      ? "bg-qadam-primary text-qadam-primaryContrast"
+                      : "bg-emerald-50 text-qadam-primary dark:bg-emerald-400/15 dark:text-emerald-100"
                   }`}
                 >
                   <Icon size={22} />

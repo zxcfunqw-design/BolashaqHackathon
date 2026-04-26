@@ -20,7 +20,7 @@ export function WelcomeScreen({
   return (
     <div className="flex min-h-[calc(100vh-104px)] flex-col justify-between gap-6">
       <section className="pt-6">
-        <div className="grid h-16 w-16 place-items-center rounded-[24px] bg-qadam-primary text-white shadow-soft">
+        <div className="grid h-16 w-16 place-items-center rounded-[24px] bg-qadam-primary text-qadam-primaryContrast shadow-soft">
           <MapPinned size={30} />
         </div>
         <h2 className="mt-6 text-4xl font-black leading-tight text-qadam-graphite">QadamGraph</h2>

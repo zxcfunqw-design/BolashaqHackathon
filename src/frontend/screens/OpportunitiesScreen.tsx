@@ -31,8 +31,8 @@ export function OpportunitiesScreen({
       </section>
 
       {!online ? (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <p className="text-sm font-semibold text-yellow-900">
+        <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-300/35 dark:bg-yellow-300/15">
+          <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">
             Интернет жоқ. Показываем сохранённые возможности.
           </p>
         </Card>

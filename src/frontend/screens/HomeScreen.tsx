@@ -49,14 +49,14 @@ export function HomeScreen({
 
   return (
     <div className="space-y-4">
-      <section className="rounded-[28px] bg-qadam-primary p-5 text-white shadow-soft">
+      <section className="rounded-[28px] bg-qadam-primary p-5 text-qadam-primaryContrast shadow-soft">
         <Badge tone="yellow">Главная</Badge>
         <h2 className="mt-4 text-3xl font-black leading-tight">Твой маршрут к вузу</h2>
-        <p className="mt-2 text-sm font-semibold leading-6 text-white/85">
+        <p className="mt-2 text-sm font-semibold leading-6 text-qadam-primaryContrast/85">
           {user.name}, {user.grade}, {user.region}
         </p>
         {readyMessage ? (
-          <p className="mt-3 rounded-2xl bg-white/15 px-3 py-2 text-sm font-bold text-white">
+          <p className="mt-3 rounded-2xl bg-qadam-primaryContrast/15 px-3 py-2 text-sm font-bold text-qadam-primaryContrast">
             {readyMessage}
           </p>
         ) : null}
@@ -70,7 +70,7 @@ export function HomeScreen({
       {basedOn ? (
         <Card>
           <div className="flex items-start gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-qadam-primary">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-qadam-primary dark:bg-emerald-400/15 dark:text-emerald-100">
               <Route size={21} />
             </div>
             <div className="min-w-0">
@@ -99,7 +99,10 @@ export function HomeScreen({
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {path.skills.slice(0, 4).map((skill) => (
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-qadam-primary" key={skill}>
+            <span
+              className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-qadam-primary dark:bg-emerald-400/15 dark:text-emerald-100"
+              key={skill}
+            >
               {skill}
             </span>
           ))}
@@ -126,7 +129,7 @@ export function HomeScreen({
 
       <Card>
         <div className="flex items-start gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-700">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-400/15 dark:text-blue-100">
             <BrainCircuit size={21} />
           </div>
           <div className="min-w-0">
@@ -157,9 +160,9 @@ export function HomeScreen({
 
 function StatusValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white/12 px-3 py-2">
-      <p className="text-[11px] font-bold uppercase text-white/65">{label}</p>
-      <p className="mt-1 text-sm font-black text-white">{value}</p>
+    <div className="rounded-2xl bg-qadam-primaryContrast/15 px-3 py-2">
+      <p className="text-[11px] font-bold uppercase text-qadam-primaryContrast/65">{label}</p>
+      <p className="mt-1 text-sm font-black text-qadam-primaryContrast">{value}</p>
     </div>
   );
 }

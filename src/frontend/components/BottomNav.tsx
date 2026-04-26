@@ -27,7 +27,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               key={item.id}
               data-testid={`nav-${item.id}`}
               className={`flex min-h-14 flex-col items-center justify-center rounded-2xl px-1 text-[11px] font-semibold transition ${
-                active ? "bg-qadam-primary text-white" : "text-qadam-muted hover:bg-qadam-bg"
+                active ? "bg-qadam-primary text-qadam-primaryContrast" : "text-qadam-muted hover:bg-qadam-bg"
               }`}
               onClick={() => onTabChange(item.id)}
               type="button"

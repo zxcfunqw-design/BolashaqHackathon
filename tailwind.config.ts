@@ -11,6 +11,7 @@ export default {
           card: "rgb(var(--color-card) / <alpha-value>)",
           primary: "rgb(var(--color-primary) / <alpha-value>)",
           primaryDark: "rgb(var(--color-primary-dark) / <alpha-value>)",
+          primaryContrast: "rgb(var(--color-primary-contrast) / <alpha-value>)",
           blue: "#2563EB",
           yellow: "#F2C94C",
           graphite: "rgb(var(--color-text) / <alpha-value>)",

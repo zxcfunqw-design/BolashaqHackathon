@@ -63,10 +63,10 @@ const nodeSize = {
 };
 
 const nodeStyles: Record<UniversityGraphNode["type"], string> = {
-  student: "border-qadam-primary bg-qadam-primary text-white",
-  direction: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-500/30 dark:bg-blue-500/12 dark:text-blue-100",
-  skill: "border-teal-200 bg-teal-50 text-teal-950 dark:border-teal-500/30 dark:bg-teal-500/12 dark:text-teal-100",
-  action: "border-yellow-200 bg-yellow-50 text-yellow-950 dark:border-yellow-500/30 dark:bg-yellow-500/14 dark:text-yellow-100",
+  student: "border-qadam-primary bg-qadam-primary text-qadam-primaryContrast",
+  direction: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-100",
+  skill: "border-teal-200 bg-teal-50 text-teal-950 dark:border-teal-500/30 dark:bg-teal-500/15 dark:text-teal-100",
+  action: "border-yellow-200 bg-yellow-50 text-yellow-950 dark:border-yellow-500/30 dark:bg-yellow-500/15 dark:text-yellow-100",
   opportunity: "border-emerald-200 bg-qadam-card text-qadam-graphite dark:border-emerald-500/30 dark:bg-emerald-500/10"
 };
 
@@ -429,7 +429,7 @@ export function PathGraphScreen({
         </div>
         <h2 className="mt-3 text-2xl font-black">Path canvas</h2>
         {isValidPersonalizedGraph(personalizedGraph) ? (
-          <p className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-bold text-qadam-primary">
+          <p className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-bold text-qadam-primary dark:bg-emerald-400/15 dark:text-emerald-100">
             Your personal path is ready.
           </p>
         ) : null}
@@ -577,7 +577,7 @@ export function PathGraphScreen({
               Add universities, skills, opportunities and hackathon-style actions based on your selected node.
             </p>
           </div>
-          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue">
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue dark:bg-blue-400/15 dark:text-blue-100">
             <WandSparkles size={20} />
           </div>
         </div>
@@ -605,13 +605,13 @@ export function PathGraphScreen({
               Select a university endpoint to calculate the full path cost from the graph.
             </p>
           </div>
-          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700">
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700 dark:bg-yellow-300/15 dark:text-yellow-100">
             <Calculator size={20} />
           </div>
         </div>
 
         {selectedFinancialPath ? (
-          <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-3">
+          <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-300/35 dark:bg-yellow-300/15">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-black uppercase text-yellow-800">Selected endpoint</p>
@@ -742,7 +742,7 @@ export function PathGraphScreen({
                 Concrete steps for doing this action, collecting proof, and turning it into portfolio evidence.
               </p>
             </div>
-            <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700">
+            <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-yellow-50 text-yellow-700 dark:bg-yellow-300/15 dark:text-yellow-100">
               <CheckCircle2 size={20} />
             </div>
           </div>
@@ -774,7 +774,7 @@ export function PathGraphScreen({
               4o-mini adapts this node using selected goals, quiz answers, path data and universities JSON.
             </p>
           </div>
-          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue">
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue dark:bg-blue-400/15 dark:text-blue-100">
             <Sparkles size={20} />
           </div>
         </div>
@@ -803,7 +803,7 @@ export function PathGraphScreen({
             <AiList title="Why this path" items={selectedGraphText.whyThisPath} />
             <AiList title="Next steps" items={selectedGraphText.nextSteps} />
             <AiList title="University notes" items={selectedGraphText.universityNotes} />
-            <p className="rounded-2xl bg-yellow-50 px-3 py-2 text-sm leading-6 text-yellow-900">
+            <p className="rounded-2xl bg-yellow-50 px-3 py-2 text-sm leading-6 text-yellow-900 dark:bg-yellow-300/15 dark:text-yellow-100">
               {selectedGraphText.riskNote}
             </p>
           </div>
@@ -820,11 +820,11 @@ function ImplementationPlanView({ plan }: { plan: ImplementationPlan }) {
         <p className="text-xs font-black uppercase text-qadam-primary">Overview</p>
         <h4 className="mt-2 text-base font-black text-qadam-graphite">{plan.goal}</h4>
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-          <div className="rounded-2xl bg-white px-3 py-2">
+          <div className="rounded-2xl bg-qadam-card px-3 py-2">
             <span className="block text-xs font-bold uppercase text-qadam-muted">Time</span>
             <strong>{plan.estimatedTime}</strong>
           </div>
-          <div className="rounded-2xl bg-white px-3 py-2">
+          <div className="rounded-2xl bg-qadam-card px-3 py-2">
             <span className="block text-xs font-bold uppercase text-qadam-muted">Difficulty</span>
             <strong className="capitalize">{plan.difficulty}</strong>
           </div>
@@ -838,9 +838,9 @@ function ImplementationPlanView({ plan }: { plan: ImplementationPlan }) {
         <p className="text-xs font-black uppercase text-qadam-primary">Step-by-step plan</p>
         <div className="mt-2 space-y-3">
           {plan.steps.map((step, index) => (
-            <article className="rounded-2xl border border-qadam-border bg-white px-3 py-3" key={`${step.title}-${index}`}>
+            <article className="rounded-2xl border border-qadam-border bg-qadam-card px-3 py-3" key={`${step.title}-${index}`}>
               <div className="flex items-start gap-3">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-qadam-primary text-xs font-black text-white">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-qadam-primary text-xs font-black text-qadam-primaryContrast">
                   {index + 1}
                 </span>
                 <div className="min-w-0">
@@ -903,7 +903,9 @@ function PlanList({
         {items.map((item) => (
           <li
             className={`rounded-2xl px-3 py-2 text-sm leading-6 ${
-              tone === "warning" ? "bg-yellow-50 text-yellow-900" : "bg-qadam-bg text-qadam-graphite"
+              tone === "warning"
+                ? "bg-yellow-50 text-yellow-900 dark:bg-yellow-300/15 dark:text-yellow-100"
+                : "bg-qadam-bg text-qadam-graphite"
             }`}
             key={item}
           >

@@ -31,7 +31,7 @@ export function PortfolioPdfDownload({
 function downloadButtonClassName(loading: boolean) {
   return `inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
     loading
-      ? "pointer-events-none cursor-not-allowed bg-qadam-primary/60 text-white"
-      : "bg-qadam-primary text-white shadow-soft hover:bg-qadam-primaryDark"
+      ? "pointer-events-none cursor-not-allowed bg-qadam-primary/60 text-qadam-primaryContrast"
+      : "bg-qadam-primary text-qadam-primaryContrast shadow-soft hover:bg-qadam-primaryDark"
   }`;
 }

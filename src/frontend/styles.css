@@ -7,6 +7,7 @@
   --color-card: 255 255 255;
   --color-primary: 15 118 110;
   --color-primary-dark: 11 95 88;
+  --color-primary-contrast: 255 255 255;
   --color-text: 31 41 51;
   --color-muted: 100 116 139;
   --color-border: 221 231 225;
@@ -26,6 +27,7 @@
   --color-card: 30 41 59;
   --color-primary: 20 184 166;
   --color-primary-dark: 13 148 136;
+  --color-primary-contrast: 4 47 46;
   --color-text: 248 250 252;
   --color-muted: 148 163 184;
   --color-border: 51 65 85;

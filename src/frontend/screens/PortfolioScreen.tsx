@@ -194,7 +194,7 @@ export function PortfolioScreen({
       <Card>
         <div className="space-y-4">
           {context ? (
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3 dark:border-blue-500/30 dark:bg-blue-500/12">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3 dark:border-blue-500/30 dark:bg-blue-500/15">
               <p className="text-xs font-black uppercase text-blue-700 dark:text-blue-100">Portfolio context</p>
               <p className="mt-1 text-sm font-bold text-qadam-graphite">
                 {context.account?.name || "Student"} · {context.account?.grade || "grade"} ·{" "}
@@ -207,7 +207,7 @@ export function PortfolioScreen({
             </div>
           ) : null}
           {desiredPath ? (
-            <div className="rounded-2xl border border-qadam-primary/20 bg-emerald-50 p-3 dark:bg-emerald-500/12">
+            <div className="rounded-2xl border border-qadam-primary/20 bg-emerald-50 p-3 dark:bg-emerald-500/15">
               <p className="text-xs font-black uppercase text-qadam-primary">Selected graph path</p>
               <p className="mt-1 text-sm font-bold text-qadam-graphite">{desiredPath.targetTitle}</p>
               <p className="mt-1 text-xs leading-5 text-qadam-muted">
@@ -328,7 +328,7 @@ export function PortfolioScreen({
       </Card>
 
       {draft?.warning ? (
-        <Card className="border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/12">
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/15">
           <div className="flex gap-3">
             <AlertCircle className="mt-0.5 shrink-0 text-amber-700 dark:text-amber-200" size={18} />
             <p className="text-sm leading-6 text-amber-900 dark:text-amber-100">{draft.warning}</p>
@@ -402,8 +402,8 @@ function buildPdfFileName(studentName: string) {
 function downloadButtonClassName(loading: boolean) {
   return `inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
     loading
-      ? "pointer-events-none cursor-not-allowed bg-qadam-primary/60 text-white"
-      : "bg-qadam-primary text-white shadow-soft hover:bg-qadam-primaryDark"
+      ? "pointer-events-none cursor-not-allowed bg-qadam-primary/60 text-qadam-primaryContrast"
+      : "bg-qadam-primary text-qadam-primaryContrast shadow-soft hover:bg-qadam-primaryDark"
   }`;
 }
 
@@ -458,7 +458,7 @@ function LanguageSwitch({ value, onChange }: LanguageSwitchProps) {
             <button
               key={language.id}
               className={`min-h-10 rounded-xl text-sm font-bold transition ${
-                active ? "bg-qadam-primary text-white shadow-soft" : "text-qadam-muted"
+                active ? "bg-qadam-primary text-qadam-primaryContrast shadow-soft" : "text-qadam-muted"
               }`}
               onClick={() => onChange(language.id)}
               type="button"

@@ -10,9 +10,10 @@ type ButtonProps = PropsWithChildren<
 >;
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-qadam-primary text-white shadow-soft hover:bg-qadam-primaryDark",
-  secondary: "bg-qadam-card text-qadam-primary border border-qadam-border hover:border-qadam-primary/40",
-  ghost: "bg-transparent text-qadam-graphite hover:bg-qadam-primary/5"
+  primary: "bg-qadam-primary text-qadam-primaryContrast shadow-soft hover:bg-qadam-primaryDark",
+  secondary:
+    "border border-qadam-border bg-qadam-card text-qadam-graphite hover:border-qadam-primary/50 hover:bg-qadam-primary/10 dark:hover:bg-qadam-primary/15",
+  ghost: "bg-transparent text-qadam-graphite hover:bg-qadam-primary/10 dark:hover:bg-qadam-primary/15"
 };
 
 export function Button({

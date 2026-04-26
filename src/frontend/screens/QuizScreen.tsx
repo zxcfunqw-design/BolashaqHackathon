@@ -54,7 +54,7 @@ export function QuizScreen({ onComplete, initialAnswers = {} }: QuizScreenProps)
               data-testid={`quiz-option-${step}-${question.options.indexOf(option)}`}
               className={`min-h-12 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
                 selected === option
-                  ? "border-qadam-primary bg-qadam-primary text-white"
+                  ? "border-qadam-primary bg-qadam-primary text-qadam-primaryContrast"
                   : "border-qadam-border bg-qadam-card text-qadam-graphite hover:border-qadam-primary/50"
               }`}
               onClick={() => choose(option)}
