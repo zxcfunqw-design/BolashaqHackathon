@@ -10,6 +10,7 @@ import {
   updateDesiredPath,
   updateGraphExpansion,
   updateGraphText,
+  updateHollandResult,
   updatePortfolio,
   updateQuizAnswers,
   updateSavedOpportunities,
@@ -20,6 +21,7 @@ import type {
   DesiredPath,
   GeneratedGraphExpansion,
   GraphAiText,
+  HollandResult,
   Language,
   MainTab,
   PortfolioDraft,
@@ -30,6 +32,7 @@ import type {
 } from "./types";
 import { AuthScreen } from "./screens/AuthScreen";
 import { GoalSelectionScreen } from "./screens/GoalSelectionScreen";
+import { HollandTestScreen } from "./screens/HollandTestScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { OpportunitiesScreen } from "./screens/OpportunitiesScreen";
@@ -39,7 +42,7 @@ import { PortfolioScreen } from "./screens/PortfolioScreen";
 import { QuizScreen } from "./screens/QuizScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 
-type FlowStep = "auth" | "welcome" | "goals" | "quiz" | "loading" | "app";
+type FlowStep = "auth" | "welcome" | "goals" | "quiz" | "holland" | "loading" | "app";
 
 export function App() {
   const online = useOnlineStatus();
@@ -100,8 +103,14 @@ export function App() {
   };
 
   const finishDiagnostic = (answers: QuizAnswers) => {
-    setFlowStep("loading");
     updateQuizAnswers(answers);
+    syncCurrentUser();
+    setFlowStep("holland");
+  };
+
+  const finishOnboarding = (hollandResult: HollandResult | null) => {
+    setFlowStep("loading");
+    updateHollandResult(hollandResult);
     const nextPath = refreshSavedPath();
     setPath(nextPath);
     syncCurrentUser();
@@ -192,6 +201,16 @@ export function App() {
         <QuizScreen
           initialAnswers={currentUser?.data.quizAnswers}
           onComplete={finishDiagnostic}
+        />
+      );
+    }
+
+    if (flowStep === "holland") {
+      return (
+        <HollandTestScreen
+          initialResult={currentUser?.data.hollandResult}
+          onComplete={finishOnboarding}
+          onSkip={() => finishOnboarding(null)}
         />
       );
     }
@@ -290,6 +309,7 @@ function createPortfolioContext(user: UserAccount): PortfolioGenerationContext {
     selectedGoals: user.data.selectedGoals,
     quizAnswers: user.data.quizAnswers,
     careerTest: user.data.careerTest ?? null,
+    hollandResult: user.data.hollandResult ?? null,
     path: user.data.path,
     desiredPath: user.data.desiredPath ?? null
   };

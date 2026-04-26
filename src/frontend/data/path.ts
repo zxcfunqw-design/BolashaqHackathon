@@ -57,50 +57,50 @@ export const quizQuestions: QuizQuestion[] = [
 ];
 
 export const mockUserPath: UserPath = {
-  name: "Aruzhan",
-  summary: "IT + Engineering",
-  interests: ["IT", "Physics"],
-  directions: ["AI", "Engineering", "Robotics"],
-  skills: ["Python", "Math", "English"],
-  project: "Telegram bot / sensor prototype",
-  opportunity: "STEM Hackathon",
-  recommendedGraphNodeIds: ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"],
+  name: "Никита",
+  summary: "Python-программист",
+  interests: ["IT", "Python", "автоматизация"],
+  directions: ["Python-программист", "DevOps", "робототехника"],
+  skills: ["Python", "SQL", "Git", "English B1-B2"],
+  project: "Telegram-бот / парсер данных",
+  opportunity: "NU / KAIST / AITU",
+  recommendedGraphNodeIds: ["you", "python-programmer", "python-basics", "telegram-bot", "aitu"],
   savedAt: new Date().toISOString(),
   nodes: [
     {
       id: "now",
-      title: "Я сейчас",
-      description: "9-сынып, ауыл мектебі, phone-first learning",
+      title: "Никита сейчас",
+      description: "Школьник из Щучинска, выбирает техническую траекторию",
       tone: "start"
     },
     {
       id: "interests",
-      title: "Интересы: IT, Physics",
-      description: "You like logic, experiments and practical tasks.",
+      title: "Интересы: IT и Python",
+      description: "Тест показал несколько технических направлений, полный граф готов для Python.",
       tone: "interest"
     },
     {
       id: "directions",
-      title: "Направления: AI, Engineering, Robotics",
-      description: "Good fit for technical contests and small prototypes.",
+      title: "Направление: Python-программист",
+      description: "Базовый маршрут можно расширять в backend, data, DevOps или техническое предпринимательство.",
       tone: "direction"
     },
     {
       id: "skills",
-      title: "Навыки: Python, Math, English",
-      description: "Start with simple scripts, formulas and tech vocabulary.",
+      title: "Навыки: Python, SQL, Git, English",
+      description: "Из JSON: синтаксис Python, алгоритмы, базы данных, Git, английский и поиск информации.",
       tone: "skill"
     },
     {
       id: "project",
-      title: "Проект: Telegram bot / sensor prototype",
-      description: "A practical mini-project that can become portfolio proof.",
+      title: "Проект: Telegram-бот / парсер",
+      description: "Первые практические шаги: пройти курс, сделать Telegram-бота и собрать парсер данных.",
       tone: "project"
     },
     {
       id: "opportunities",
-      title: "Возможности: STEM Hackathon",
-      description: "Online format, low internet, suitable for grades 8-11.",
+      title: "Вузы: NU, KAIST, AITU",
+      description: "В граф добавлены экзамены, гранты, олимпиады, проекты и портфолио-требования.",
       tone: "opportunity"
     },
     {
@@ -117,27 +117,27 @@ export const planSections: PlanSection[] = [
     title: "30 days",
     focus: "Foundation",
     items: [
-      { id: "p1", text: "Finish 8 short Python lessons on a phone", done: true },
-      { id: "p2", text: "Write one paragraph about your career interest", done: true },
-      { id: "p3", text: "Solve 10 math or logic practice tasks", done: false }
+      { id: "p1", text: "Пройти 8-10 коротких уроков по синтаксису Python", done: true },
+      { id: "p2", text: "Оформить GitHub и загрузить первый учебный репозиторий", done: true },
+      { id: "p3", text: "Решить 10 задач на массивы, хеш-таблицы и бинарный поиск", done: false }
     ]
   },
   {
     title: "60 days",
     focus: "First project",
     items: [
-      { id: "p4", text: "Build a Telegram bot idea on paper", done: false },
-      { id: "p5", text: "Find one mentor, teacher or older student", done: false },
-      { id: "p6", text: "Save two contests that accept online work", done: false }
+      { id: "p4", text: "Собрать MVP Telegram-бота с меню и простым хранилищем данных", done: false },
+      { id: "p5", text: "Написать короткое описание проекта для портфолио", done: false },
+      { id: "p6", text: "Начать английский словарь для документации, PEP и StackOverflow", done: false }
     ]
   },
   {
     title: "90 days",
     focus: "Portfolio proof",
     items: [
-      { id: "p7", text: "Submit one mini-project or contest application", done: false },
-      { id: "p8", text: "Create a portfolio description in Kazakh/Russian", done: false },
-      { id: "p9", text: "Record results, feedback and next step", done: false }
+      { id: "p7", text: "Создать парсер данных с веб-сайта и сохранить результат в SQLite", done: false },
+      { id: "p8", text: "Собрать README: проблема, решение, скриншоты, ссылка на код", done: false },
+      { id: "p9", text: "Сверить требования NU, KAIST и AITU с текущими экзаменами и проектами", done: false }
     ]
   }
 ];

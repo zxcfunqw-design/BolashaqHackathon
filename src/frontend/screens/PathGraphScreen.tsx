@@ -89,9 +89,9 @@ export function PathGraphScreen({
 }: PathGraphScreenProps) {
   const initialNodeIds = desiredPath?.nodeIds ?? path.recommendedGraphNodeIds ?? [
     "you",
-    "ai-engineer",
-    "ai-python",
-    "ai-bot",
+    "python-programmer",
+    "python-basics",
+    "telegram-bot",
     "aitu"
   ];
   const [scale, setScale] = useState(0.74);
@@ -795,31 +795,42 @@ function getTargets(sourceId: string, outgoingBySource: Map<string, UniversityGr
 
 function getExpandedFromNodeIds(nodeIds: string[]): ExpandedBranch {
   return {
-    directionId: nodeIds.find((nodeId) => nodeId.endsWith("-engineer")) ?? null,
+    directionId:
+      nodeIds.find((nodeId) =>
+        [
+          "python-programmer",
+          "ai-engineer",
+          "devops-engineer",
+          "robotics-engineer",
+          "software-engineer",
+          "tech-entrepreneur"
+        ].includes(nodeId)
+      ) ?? null,
     skillId:
       nodeIds.find((nodeId) =>
         [
+          "python-basics",
+          "algorithms",
+          "databases",
+          "git",
+          "english",
+          "search-skill",
+          "time-management",
           "ai-python",
-          "ai-math",
-          "ai-english",
-          "software-js",
-          "software-api",
           "software-product",
-          "robotics-physics",
-          "robotics-iot",
-          "robotics-cad"
+          "robotics-iot"
         ].includes(nodeId)
       ) ?? null,
     actionId:
       nodeIds.find((nodeId) =>
         [
+          "free-course",
+          "telegram-bot",
+          "web-parser",
           "ai-bot",
-          "ai-data",
           "ai-olympiad",
-          "software-local-event",
           "software-hackathon",
-          "robotics-sensor",
-          "robotics-demo-day"
+          "robotics-sensor"
         ].includes(nodeId)
       ) ?? null
   };

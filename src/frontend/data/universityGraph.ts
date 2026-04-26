@@ -28,24 +28,42 @@ export type UniversityGraphEdge = {
 
 export const graphBoard = {
   width: 1180,
-  height: 720
+  height: 1100
 };
 
-const baseUniversityGraphNodes: Array<
-  Omit<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions">
-> = [
+export const universityGraphNodes: UniversityGraphNode[] = [
   {
     id: "you",
     type: "student",
     layer: 1,
-    title: "You",
-    subtitle: "IT + Engineering path",
+    title: "Ученик",
+    subtitle: "Профиль, тесты и цели",
+    costKzt: 0,
+    costNote: "Стартовая вершина: регистрационные данные и результаты тестов уже есть в профиле.",
+    fundingOptions: ["Финансирование не требуется"],
     x: 40,
-    y: 314,
+    y: 430,
     details: [
-      "Interests: IT, physics, robotics and practical projects.",
-      "Format: phone-first path that still works with weak internet.",
-      "Goal: choose a direction, skill, action and university endpoint."
+      "Профиль строится из школы, класса, региона, целей, диагностического опроса и Holland-теста.",
+      "Граф можно расширять: один ученик может идти к нескольким вузам через разные навыки и проекты.",
+      "Финансовый калькулятор считает путь DFS от этой вершины до выбранного вуза."
+    ]
+  },
+  {
+    id: "python-programmer",
+    type: "direction",
+    layer: 2,
+    title: "Python-программист",
+    subtitle: "Готовый детальный маршрут",
+    costKzt: 0,
+    costNote: "Выбор направления не требует бюджета, но влияет на набор навыков и проектов.",
+    fundingOptions: ["Профориентация", "Школьный наставник"],
+    x: 250,
+    y: 40,
+    details: [
+      "Подходит для Telegram-ботов, парсеров, backend-сервисов и анализа данных.",
+      "Маршрут можно развивать в Software Engineering, Data Science или DevOps.",
+      "Сильное портфолио: код на GitHub, README, демонстрация и короткое описание роли ученика."
     ]
   },
   {
@@ -53,13 +71,50 @@ const baseUniversityGraphNodes: Array<
     type: "direction",
     layer: 2,
     title: "AI Engineer",
-    subtitle: "Best fit from diagnostic answers",
+    subtitle: "Совместимо со старым маршрутом",
+    costKzt: 0,
+    costNote: "AI-трек начинается с Python, математики и честных маленьких проектов.",
+    fundingOptions: ["Бесплатные курсы", "Олимпиадные архивы"],
     x: 250,
-    y: 96,
+    y: 184,
     details: [
-      "Good match for students who enjoy math, logic and Python.",
-      "Starts with simple models, chatbots and data analysis.",
-      "Can lead to AI, Data Science and Computer Science programs."
+      "Сохраняет старые сохраненные маршруты пользователей после merge.",
+      "Фокус: Python, логика, данные, простые модели и объяснение результата.",
+      "Хорошо связывается с NU, AITU и международными scholarship-треками."
+    ]
+  },
+  {
+    id: "devops-engineer",
+    type: "direction",
+    layer: 2,
+    title: "DevOps-инженер",
+    subtitle: "Будущая ветка",
+    costKzt: 0,
+    costNote: "Пока показываем как альтернативу, которую можно расширить AI-генератором.",
+    fundingOptions: ["GitHub", "Linux practice", "Free cloud tiers"],
+    x: 250,
+    y: 328,
+    details: [
+      "Близкие базовые навыки: Python, Git, Linux и работа с документацией.",
+      "Может вести к backend, cloud и infrastructure-направлениям.",
+      "Хорошая следующая вершина для AI-расширения графа."
+    ]
+  },
+  {
+    id: "robotics-engineer",
+    type: "direction",
+    layer: 2,
+    title: "Инженер / робототехника",
+    subtitle: "Физика, IoT и прототипы",
+    costKzt: 0,
+    costNote: "Базовый маршрут можно делать даже без дорогого железа через симуляторы.",
+    fundingOptions: ["Школьный кабинет", "Tinkercad", "Командный бюджет"],
+    x: 250,
+    y: 472,
+    details: [
+      "Подходит для учеников, которым интересны физика, устройства и автоматизация.",
+      "Python помогает с обработкой данных, сенсорами и демонстрациями.",
+      "Портфолио лучше строить через схему, фото/видео прототипа и объяснение пользы."
     ]
   },
   {
@@ -67,97 +122,169 @@ const baseUniversityGraphNodes: Array<
     type: "direction",
     layer: 2,
     title: "Software Engineer",
-    subtitle: "Products, web and backend",
+    subtitle: "Web, backend и продукт",
+    costKzt: 0,
+    costNote: "Старый software-маршрут сохранен, чтобы не ломать локальные данные.",
+    fundingOptions: ["GitHub Pages", "Free hosting", "Школьные проекты"],
     x: 250,
-    y: 314,
+    y: 616,
     details: [
-      "Good match for students who like building useful apps.",
-      "Starts with a Telegram bot, website or small service.",
-      "Can lead to Software Engineering and Information Systems."
+      "Подходит для MVP, сайтов, регистрационных форм и небольших сервисов.",
+      "Портфолио должно показать проблему, пользователя, решение и результат.",
+      "Может вести к AITU, KBTU или Computer Science программам."
     ]
   },
   {
-    id: "robotics-engineer",
+    id: "tech-entrepreneur",
     type: "direction",
     layer: 2,
-    title: "Robotics Engineer",
-    subtitle: "Physics, IoT and devices",
+    title: "Tech Entrepreneur",
+    subtitle: "MVP и бизнес в IT",
+    costKzt: 0,
+    costNote: "Можно стартовать с бесплатных no-code/prototype-инструментов и Python-MVP.",
+    fundingOptions: ["Hackathons", "School incubator", "Командный бюджет"],
     x: 250,
-    y: 532,
+    y: 760,
     details: [
-      "Good match for students who enjoy physics, circuits and prototypes.",
-      "Starts with a sensor simulation or Arduino-style project.",
-      "Can lead to Robotics, Automation and Engineering programs."
+      "Направление для ученика, который хочет запускать идеи и собирать команду.",
+      "Python-проект можно использовать как MVP для будущей предпринимательской ветки.",
+      "Дальше граф можно расширить на pitch deck, customer discovery и конкурсы стартапов."
+    ]
+  },
+  {
+    id: "python-basics",
+    type: "skill",
+    layer: 3,
+    title: "Основы Python",
+    subtitle: "Синтаксис, функции, классы",
+    costKzt: 0,
+    costNote: "Базу можно начать бесплатно на открытых платформах.",
+    fundingOptions: ["Stepik", "Coursera audit", "YouTube", "Школьный компьютерный класс"],
+    x: 492,
+    y: 28,
+    details: [
+      "Переменные, циклы, функции, классы и работа с файлами.",
+      "Следить за стилем кода и стандартом PEP8.",
+      "Цель: уверенно писать небольшие программы без копирования целиком."
     ]
   },
   {
     id: "ai-python",
     type: "skill",
     layer: 3,
-    title: "Python",
-    subtitle: "Code for AI and data",
+    title: "Python для AI",
+    subtitle: "Совместимость со старым AI-треком",
+    costKzt: 0,
+    costNote: "Использует те же бесплатные источники, что и базовый Python.",
+    fundingOptions: ["Stepik", "Kaggle Learn", "Google Colab"],
     x: 492,
-    y: 68,
+    y: 132,
     details: [
-      "Variables, loops, functions and working with files.",
-      "Mini libraries: pandas, matplotlib or simple APIs.",
-      "Goal: write small scripts without fear."
+      "Мини-библиотеки: pandas, matplotlib, простые API и notebooks.",
+      "Не нужно обещать сложный AI: достаточно понятного анализа данных.",
+      "Доказательство: notebook, выводы и скриншоты результата."
     ]
   },
   {
-    id: "ai-math",
+    id: "algorithms",
     type: "skill",
     layer: 3,
-    title: "Math",
-    subtitle: "Logic, algebra and probability",
+    title: "Алгоритмы",
+    subtitle: "Структуры данных и Big O",
+    costKzt: 0,
+    costNote: "Есть бесплатные задачники и разборы.",
+    fundingOptions: ["Informatics.kz", "Олимпиадные архивы", "Школьный учитель"],
     x: 492,
-    y: 172,
+    y: 236,
     details: [
-      "Algebra, graphs, percentages and probability basics.",
-      "Practice through ENT-style tasks and olympiad explanations.",
-      "Goal: understand why a model produces a result."
+      "Массивы, хеш-таблицы, бинарный поиск и оценка сложности.",
+      "Практика помогает для олимпиад, ЕНТ-информатики и технических интервью.",
+      "В портфолио можно добавить прогресс и разобранные задачи."
     ]
   },
   {
-    id: "ai-english",
+    id: "databases",
     type: "skill",
     layer: 3,
-    title: "English",
-    subtitle: "Documentation and applications",
+    title: "Базы данных",
+    subtitle: "SQL, PostgreSQL, SQLite",
+    costKzt: 0,
+    costNote: "SQLite и PostgreSQL можно практиковать локально бесплатно.",
+    fundingOptions: ["SQLite", "PostgreSQL", "Free cloud tiers"],
     x: 492,
-    y: 276,
+    y: 340,
     details: [
-      "Technical vocabulary and reading contest rules.",
-      "Short project descriptions for portfolios.",
-      "Goal: read university and course materials confidently."
+      "Хранить данные проекта не только в файлах.",
+      "Начать с SQLite, затем перейти к PostgreSQL.",
+      "Полезно для ботов, парсеров, каталогов и dashboard-проектов."
     ]
   },
   {
-    id: "software-js",
+    id: "git",
     type: "skill",
     layer: 3,
-    title: "Web basics",
-    subtitle: "HTML, CSS, JavaScript",
+    title: "Git и GitHub",
+    subtitle: "clone, commit, push, pull",
+    costKzt: 0,
+    costNote: "Git и GitHub доступны бесплатно.",
+    fundingOptions: ["GitHub", "GitHub Pages", "Open source examples"],
     x: 492,
-    y: 276,
+    y: 444,
     details: [
-      "Pages, forms, simple state and responsive layout.",
-      "Practice through small school services.",
-      "Goal: build the first working interface."
+      "GitHub нужен как витрина кода и доказательство самостоятельной работы.",
+      "Каждый учебный проект лучше вести в отдельном репозитории.",
+      "README должен объяснять проблему, запуск, скриншоты и роль ученика."
     ]
   },
   {
-    id: "software-api",
+    id: "english",
     type: "skill",
     layer: 3,
-    title: "Backend/API",
-    subtitle: "Data and service logic",
+    title: "Английский язык",
+    subtitle: "B1-B2 для документации",
+    costKzt: 100000,
+    costNote: "Ориентир: подготовка и сдача IELTS в РК может стоить около 100 000 KZT.",
+    fundingOptions: ["Opportunity Funds", "Бесплатные language clubs", "Школьная библиотека"],
     x: 492,
-    y: 380,
+    y: 548,
     details: [
-      "Requests, JSON, persistence and server logic.",
-      "Practice through a bot, schedule or catalog.",
-      "Goal: understand how an app works inside."
+      "B1-B2 помогает читать документацию, StackOverflow и правила конкурсов.",
+      "Для зарубежных вузов пригодятся IELTS/TOEFL или эквивалент.",
+      "Начать можно с технического словаря и коротких описаний проектов."
+    ]
+  },
+  {
+    id: "search-skill",
+    type: "skill",
+    layer: 3,
+    title: "Поиск информации",
+    subtitle: "Docs, StackOverflow, debug",
+    costKzt: 0,
+    costNote: "Навык развивается через практику с документацией и ошибками.",
+    fundingOptions: ["Официальные docs", "StackOverflow", "GitHub Issues"],
+    x: 492,
+    y: 652,
+    details: [
+      "Формулировать ошибку, проверять версии библиотек и читать примеры.",
+      "Это снижает зависимость от наставника и ускоряет обучение.",
+      "Хорошо работает как отдельный навык в портфолио."
+    ]
+  },
+  {
+    id: "time-management",
+    type: "skill",
+    layer: 3,
+    title: "Тайм-менеджмент",
+    subtitle: "Декомпозиция задач",
+    costKzt: 0,
+    costNote: "Можно вести план в заметках или бесплатном таск-трекере.",
+    fundingOptions: ["Заметки телефона", "Trello/Notion free", "Бумажный план"],
+    x: 492,
+    y: 756,
+    details: [
+      "Разбивать большой проект на микро-задачи по 1-2 часа.",
+      "Вести короткий список: что сделал, что сломалось, что дальше.",
+      "Так проще доводить проекты до портфолио, а не бросать на середине."
     ]
   },
   {
@@ -165,27 +292,16 @@ const baseUniversityGraphNodes: Array<
     type: "skill",
     layer: 3,
     title: "Product thinking",
-    subtitle: "Problem, user and result",
+    subtitle: "Problem, user, result",
+    costKzt: 0,
+    costNote: "Можно практиковать на школьных и локальных проблемах.",
+    fundingOptions: ["Интервью с пользователями", "Hackathon mentors"],
     x: 492,
-    y: 484,
+    y: 860,
     details: [
-      "Find a real problem at school or in the community.",
-      "Describe the user and validate the idea.",
-      "Goal: build not just code, but a useful product."
-    ]
-  },
-  {
-    id: "robotics-physics",
-    type: "skill",
-    layer: 3,
-    title: "Physics",
-    subtitle: "Electricity and mechanics",
-    x: 492,
-    y: 380,
-    details: [
-      "Force, motion, electric circuits and simple calculations.",
-      "Practice through experiments and simulations.",
-      "Goal: explain how the device behaves."
+      "Найти реальную проблему, пользователя и критерий результата.",
+      "Описать не только код, но и пользу решения.",
+      "Сильная связка для грантов и интервью."
     ]
   },
   {
@@ -194,82 +310,100 @@ const baseUniversityGraphNodes: Array<
     layer: 3,
     title: "IoT basics",
     subtitle: "Sensors and automation",
+    costKzt: 10000,
+    costNote: "Минимальный резерв на датчики или доступ к школьному набору.",
+    fundingOptions: ["Школьная лаборатория", "Командный бюджет", "Tinkercad"],
     x: 492,
-    y: 484,
+    y: 964,
     details: [
-      "Sensor, signal, condition and action.",
-      "Practice through Arduino or Tinkercad simulation.",
-      "Goal: create a clear prototype story."
+      "Сенсор, сигнал, условие и действие.",
+      "Можно начать с симуляции до покупки деталей.",
+      "Хорошо дополняет Python через обработку данных."
     ]
   },
   {
-    id: "robotics-cad",
-    type: "skill",
-    layer: 3,
-    title: "3D/CAD",
-    subtitle: "Model and assembly",
-    x: 492,
-    y: 588,
+    id: "free-course",
+    type: "action",
+    layer: 4,
+    title: "Пройти бесплатный курс",
+    subtitle: "Открытые платформы",
+    costKzt: 0,
+    costNote: "Первый курс можно пройти бесплатно.",
+    fundingOptions: ["Открытые платформы", "Coursera audit", "Stepik"],
+    x: 734,
+    y: 60,
     details: [
-      "Sketch, dimensions and simple construction.",
-      "Practice through a sensor case or small model.",
-      "Goal: show engineering thinking."
+      "Выбрать короткий курс по Python и идти по нему с ежедневной практикой.",
+      "Результат: 8-12 маленьких задач и понятная база синтаксиса.",
+      "Сертификат полезен, но код и заметки важнее."
+    ]
+  },
+  {
+    id: "telegram-bot",
+    type: "action",
+    layer: 4,
+    title: "Написать Telegram-бота",
+    subtitle: "Первый портфолио-проект",
+    costKzt: 7000,
+    costNote: "Резерв на интернет, тестовый хостинг или демонстрацию.",
+    fundingOptions: ["Free hosting tier", "Школьный сервер", "Командный бюджет"],
+    x: 734,
+    y: 188,
+    details: [
+      "Бот может отвечать на вопросы школы, хранить расписание или помогать с подготовкой.",
+      "Для портфолио нужны ссылка на код, скриншоты и короткое описание пользы.",
+      "Хорошо связывает Python, Git, базы данных и продуктовый подход."
     ]
   },
   {
     id: "ai-bot",
     type: "action",
     layer: 4,
-    title: "Build a Telegram bot",
-    subtitle: "AI assistant for school",
+    title: "AI school assistant",
+    subtitle: "Старый AI action сохранен",
+    costKzt: 12000,
+    costNote: "Резерв на API-тесты, демо и хостинг. Можно заменить локальными правилами.",
+    fundingOptions: ["Free API credits", "Командный бюджет", "Локальный fallback"],
     x: 734,
-    y: 58,
+    y: 316,
     details: [
-      "Bot answers common student questions.",
-      "Start with rules, menu and simple text flows.",
-      "Portfolio proof: problem, solution, screenshots and feedback."
+      "Старый сохраненный маршрут ведет сюда без поломки после pull.",
+      "AI в MVP лучше использовать аккуратно: объяснять ограничения и не обещать магию.",
+      "Доказательство: demo, prompt, ограничения и feedback."
     ]
   },
   {
-    id: "ai-data",
+    id: "web-parser",
     type: "action",
     layer: 4,
-    title: "Build a data dashboard",
-    subtitle: "Study, clubs or community data",
+    title: "Создать парсер данных",
+    subtitle: "Данные с веб-сайта",
+    costKzt: 5000,
+    costNote: "Резерв на интернет и хранение результатов.",
+    fundingOptions: ["Локальные файлы", "SQLite", "Бесплатный хостинг"],
     x: 734,
-    y: 188,
+    y: 444,
     details: [
-      "Collect a table and show conclusions with charts.",
-      "Use school data or open data.",
-      "Portfolio proof: dataset, insights and visualizations."
+      "Парсер учит работать с HTTP, HTML, файлами и базами данных.",
+      "Следующий шаг: превратить собранные данные в мини-dashboard.",
+      "Хорошее доказательство самостоятельности для Computer Science трека."
     ]
   },
   {
     id: "ai-olympiad",
     type: "action",
     layer: 4,
-    title: "Join an olympiad",
-    subtitle: "Prepare for upcoming months",
+    title: "Olympiad preparation",
+    subtitle: "Math and informatics proof",
+    costKzt: 0,
+    costNote: "Можно готовиться по бесплатным архивам.",
+    fundingOptions: ["Олимпиадные архивы", "Школьный учитель", "Peer group"],
     x: 734,
-    y: 318,
+    y: 572,
     details: [
-      "Choose math, informatics or a project contest.",
-      "Save the deadline and preparation plan.",
-      "Portfolio proof: certificate, solved tasks and reflection."
-    ]
-  },
-  {
-    id: "software-local-event",
-    type: "action",
-    layer: 4,
-    title: "Launch a local event tool",
-    subtitle: "Registration and schedule",
-    x: 734,
-    y: 298,
-    details: [
-      "Create a registration form for a school event.",
-      "Add participant list and schedule.",
-      "Portfolio proof: real users and measurable result."
+      "Выбрать информатику или математику и вести журнал решенных задач.",
+      "Даже без победы прогресс можно показать как evidence.",
+      "Сильная добавка для NU и KAIST маршрутов."
     ]
   },
   {
@@ -277,90 +411,91 @@ const baseUniversityGraphNodes: Array<
     type: "action",
     layer: 4,
     title: "Go to a hackathon",
-    subtitle: "Team, MVP and presentation",
+    subtitle: "Team, MVP, pitch",
+    costKzt: 15000,
+    costNote: "Резерв на дорогу, интернет или демо-материалы.",
+    fundingOptions: ["Организаторы", "Школьная поддержка", "Командный бюджет"],
     x: 734,
-    y: 428,
+    y: 700,
     details: [
-      "Choose an online or hybrid format.",
-      "Build an MVP in one or two weeks.",
-      "Portfolio proof: demo, role in team and outcome."
+      "Собрать MVP за короткий срок и описать личную роль.",
+      "Сохранить презентацию, demo link и обратную связь.",
+      "Подходит для portfolio и entrepreneurial веток."
     ]
   },
   {
     id: "robotics-sensor",
     type: "action",
     layer: 4,
-    title: "Build a sensor prototype",
+    title: "Sensor prototype",
     subtitle: "Smart greenhouse or classroom",
+    costKzt: 30000,
+    costNote: "Минимальный резерв на датчики, провода и демонстрацию.",
+    fundingOptions: ["Школьная лаборатория", "Командный бюджет", "Городской конкурс"],
     x: 734,
-    y: 428,
+    y: 828,
     details: [
-      "Simulate temperature or humidity sensing.",
-      "Describe value for school, family or community.",
-      "Portfolio proof: scheme, logic, photo or video."
+      "Симулировать или собрать измерение температуры, влажности или освещения.",
+      "Описать пользу для школы, семьи или сообщества.",
+      "Доказательство: схема, логика, фото/видео и выводы."
     ]
-  },
-  {
-    id: "robotics-demo-day",
-    type: "action",
-    layer: 4,
-    title: "Run a demo day",
-    subtitle: "Local engineering presentation",
-    x: 734,
-    y: 558,
-    details: [
-      "Show the prototype to a teacher or class.",
-      "Collect questions and improve the project.",
-      "Portfolio proof: feedback, next iteration and learning."
-    ]
-  },
-  {
-    id: "aitu",
-    type: "opportunity",
-    layer: 5,
-    title: "Astana IT University",
-    subtitle: "CS, Software Engineering, AI",
-    x: 986,
-    y: 86,
-    details: [
-      "Strong endpoint for AI and Software paths.",
-      "Good proof: bot, dashboard or web project.",
-      "Useful to strengthen math, informatics and English."
-    ],
-    sourceUrl: "https://astanait.edu.kz/en/bachelor/",
-    sourceLabel: "AITU bachelor programs"
   },
   {
     id: "nu",
     type: "opportunity",
     layer: 5,
     title: "Nazarbayev University",
-    subtitle: "Engineering and Digital Sciences",
+    subtitle: "Dream tier",
+    costKzt: 100000,
+    costNote: "В стоимость заложен ориентир на IELTS/подготовку; обучение целится в грант NU.",
+    fundingOptions: ["NU grant", "Opportunity Funds", "Yessenov Foundation"],
     x: 986,
-    y: 248,
+    y: 94,
     details: [
-      "Strong endpoint for research-heavy paths.",
-      "Good fit for AI, robotics and engineering.",
-      "Important to show academic foundation and projects."
+      "NUET и английский требуют отдельной подготовки и календаря дедлайнов.",
+      "Сильные extracurriculars: волонтерство, олимпиады, проекты и понятная личная роль.",
+      "Портфолио должно честно показывать проблему, действие, результат и следующий шаг."
     ],
-    sourceUrl: "https://old.nu.edu.kz/admissions/undergraduate-eng",
-    sourceLabel: "NU undergraduate"
+    sourceUrl: "https://nu.edu.kz/admissions",
+    sourceLabel: "NU Admissions"
   },
   {
-    id: "satbayev",
+    id: "kaist",
     type: "opportunity",
     layer: 5,
-    title: "Satbayev University",
-    subtitle: "Automation, Robotics, CS",
+    title: "KAIST",
+    subtitle: "South Korea dream tier",
+    costKzt: 0,
+    costNote: "Маршрут целится в KAIST International Student Scholarship; фактические расходы надо уточнять.",
+    fundingOptions: ["KAIST Scholarship", "Olympiad portfolio", "GitHub projects"],
     x: 986,
-    y: 410,
+    y: 304,
     details: [
-      "Strong endpoint for hardware, IoT and robotics.",
-      "A sensor or engineering-scheme portfolio is especially useful.",
-      "Good fit for technical and industrial trajectories."
+      "Нужны сильный английский, академическая база и завершенные технические проекты.",
+      "Хорошо работают 2-3 законченных GitHub-проекта с README и демо.",
+      "Для MVP достаточно сохранить как амбициозный endpoint и считать минимальный путь."
     ],
-    sourceUrl: "https://official.satbayev.university/en/programs",
-    sourceLabel: "Satbayev education programs"
+    sourceUrl: "https://admission.kaist.ac.kr/intl-undergraduate/",
+    sourceLabel: "KAIST International Admissions"
+  },
+  {
+    id: "aitu",
+    type: "opportunity",
+    layer: 5,
+    title: "Astana IT University",
+    subtitle: "Regular / backup tier",
+    costKzt: 0,
+    costNote: "Маршрут целится в государственный грант РК или внутренний грант AITU.",
+    fundingOptions: ["Государственный грант РК", "Сельская квота", "AITU Open"],
+    x: 986,
+    y: 514,
+    details: [
+      "ЕНТ: ориентир 110-115+; профильные предметы математика и информатика.",
+      "Внутренние гранты и скидки могут быть доступны через олимпиады и соревнования.",
+      "Python-практика, GitHub и Telegram-бот усиливают заявку."
+    ],
+    sourceUrl: "https://astanait.edu.kz/en/bachelor/",
+    sourceLabel: "AITU Bachelor programs"
   },
   {
     id: "kbtu",
@@ -368,186 +503,88 @@ const baseUniversityGraphNodes: Array<
     layer: 5,
     title: "KBTU",
     subtitle: "IT, engineering, English-medium",
+    costKzt: 80000,
+    costNote: "Резерв на подготовку, документы и поездку; обучение лучше покрывать грантом/скидкой.",
+    fundingOptions: ["Грант РК", "Internal scholarships", "Hackathon portfolio"],
     x: 986,
-    y: 572,
+    y: 682,
     details: [
-      "Strong endpoint for software and industry tracks.",
-      "Useful proof: English, web/API and product project.",
-      "A hackathon MVP can show teamwork and execution."
+      "Подходит для software, product и industry-oriented маршрутов.",
+      "Сильные доказательства: английский, web/API проект и командный MVP.",
+      "Hackathon result может показать teamwork and execution."
     ],
     sourceUrl:
       "https://kbtu.edu.kz/en/schools/school-of-information-technology-and-engineering/bachelor-s-educational-programs-of-the-school-of-information-technology-and-engineering",
     sourceLabel: "KBTU SITE programs"
+  },
+  {
+    id: "satbayev",
+    type: "opportunity",
+    layer: 5,
+    title: "Satbayev University",
+    subtitle: "Automation, Robotics, CS",
+    costKzt: 60000,
+    costNote: "Резерв на подготовку, материалы проекта и документы.",
+    fundingOptions: ["Грант РК", "Технические конкурсы", "Школьная лаборатория"],
+    x: 986,
+    y: 850,
+    details: [
+      "Хороший endpoint для hardware, IoT и инженерных проектов.",
+      "Сенсорный прототип и схема особенно полезны для портфолио.",
+      "Можно сравнивать с AITU и NU по стоимости, риску и требованиям."
+    ],
+    sourceUrl: "https://official.satbayev.university/en/programs",
+    sourceLabel: "Satbayev programs"
   }
 ];
 
-const nodeFinance: Record<
-  string,
-  Pick<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions">
-> = {
-  you: {
-    costKzt: 0,
-    costNote: "Profile setup is free.",
-    fundingOptions: ["No funding needed"]
-  },
-  "ai-engineer": {
-    costKzt: 0,
-    costNote: "Career direction choice.",
-    fundingOptions: ["No funding needed"]
-  },
-  "software-engineer": {
-    costKzt: 0,
-    costNote: "Career direction choice.",
-    fundingOptions: ["No funding needed"]
-  },
-  "robotics-engineer": {
-    costKzt: 0,
-    costNote: "Career direction choice.",
-    fundingOptions: ["No funding needed"]
-  },
-  "ai-python": {
-    costKzt: 12000,
-    costNote: "Phone-friendly Python course, mobile data and practice materials.",
-    fundingOptions: ["Free YouTube/Coursera audit", "School computer club", "Family micro-budget"]
-  },
-  "ai-math": {
-    costKzt: 18000,
-    costNote: "ENT/olympiad practice set and tutoring reserve.",
-    fundingOptions: ["School teacher support", "Free online problem banks", "Local sponsor"]
-  },
-  "ai-english": {
-    costKzt: 20000,
-    costNote: "English prep materials and speaking practice.",
-    fundingOptions: ["Free language clubs", "Library resources", "Family micro-budget"]
-  },
-  "software-js": {
-    costKzt: 10000,
-    costNote: "Web basics course and hosting experiments.",
-    fundingOptions: ["FreeCodeCamp", "GitHub Pages", "School computer lab"]
-  },
-  "software-api": {
-    costKzt: 14000,
-    costNote: "Backend/API practice, database sandbox and deployment reserve.",
-    fundingOptions: ["Free cloud tier", "Teacher mentor", "Hackathon credits"]
-  },
-  "software-product": {
-    costKzt: 5000,
-    costNote: "User interviews, printing and presentation materials.",
-    fundingOptions: ["School project budget", "Team split", "No-code free tools"]
-  },
-  "robotics-physics": {
-    costKzt: 12000,
-    costNote: "Physics prep materials and simple experiment supplies.",
-    fundingOptions: ["School lab", "Teacher support", "Reused materials"]
-  },
-  "robotics-iot": {
-    costKzt: 30000,
-    costNote: "Sensors, wires or simulator upgrade budget.",
-    fundingOptions: ["Tinkercad simulation", "Borrowed Arduino kit", "Mini-grant"]
-  },
-  "robotics-cad": {
-    costKzt: 15000,
-    costNote: "CAD practice, model printing reserve or materials.",
-    fundingOptions: ["Free CAD software", "School makerspace", "Local sponsor"]
-  },
-  "ai-bot": {
-    costKzt: 7000,
-    costNote: "Bot hosting, internet and demo materials.",
-    fundingOptions: ["Free hosting tier", "School server", "Team split"]
-  },
-  "ai-data": {
-    costKzt: 9000,
-    costNote: "Dataset preparation, charts and presentation.",
-    fundingOptions: ["Open data", "Free spreadsheet tools", "Teacher mentor"]
-  },
-  "ai-olympiad": {
-    costKzt: 25000,
-    costNote: "Registration/travel reserve and preparation materials.",
-    fundingOptions: ["School contest budget", "District support", "Grant application"]
-  },
-  "software-local-event": {
-    costKzt: 12000,
-    costNote: "Event materials, forms, printing and local logistics.",
-    fundingOptions: ["School budget", "Community partner", "Free digital forms"]
-  },
-  "software-hackathon": {
-    costKzt: 22000,
-    costNote: "Hackathon registration, transport or demo reserve.",
-    fundingOptions: ["Free online hackathons", "Team split", "Sponsor reimbursement"]
-  },
-  "robotics-sensor": {
-    costKzt: 42000,
-    costNote: "Sensor prototype materials or replacement parts.",
-    fundingOptions: ["Borrowed kit", "Mini-grant", "Local business sponsor"]
-  },
-  "robotics-demo-day": {
-    costKzt: 14000,
-    costNote: "Demo stand, poster and local presentation materials.",
-    fundingOptions: ["School event budget", "Reused materials", "Parent committee"]
-  },
-  aitu: {
-    costKzt: 850000,
-    costNote: "Estimated first-year self-funded university budget placeholder.",
-    fundingOptions: ["State grant", "University scholarship", "Part-time tech work", "Family plan"]
-  },
-  nu: {
-    costKzt: 150000,
-    costNote: "Grant-focused route placeholder; includes application, test prep and travel reserve, not tuition.",
-    fundingOptions: ["NU grant", "Need-based support", "External scholarship"]
-  },
-  satbayev: {
-    costKzt: 720000,
-    costNote: "Estimated first-year self-funded engineering budget placeholder.",
-    fundingOptions: ["State grant", "University discount", "Regional sponsor", "Family plan"]
-  },
-  kbtu: {
-    costKzt: 1100000,
-    costNote: "Estimated first-year self-funded IT/engineering budget placeholder.",
-    fundingOptions: ["State grant", "Merit scholarship", "Corporate scholarship", "Part-time work"]
-  }
-};
-
-const defaultFinance: Pick<UniversityGraphNode, "costKzt" | "costNote" | "fundingOptions"> = {
-  costKzt: 0,
-  costNote: "Cost is not estimated yet.",
-  fundingOptions: ["Clarify with school mentor"]
-};
-
-export const universityGraphNodes: UniversityGraphNode[] = baseUniversityGraphNodes.map((node) => ({
-  ...node,
-  ...(nodeFinance[node.id] ?? defaultFinance)
-}));
-
 export const universityGraphEdges: UniversityGraphEdge[] = [
-  { id: "you-ai", from: "you", to: "ai-engineer", label: "top match", tone: "primary" },
-  { id: "you-software", from: "you", to: "software-engineer", label: "product", tone: "blue" },
+  { id: "you-python", from: "you", to: "python-programmer", label: "ready", tone: "primary" },
+  { id: "you-ai", from: "you", to: "ai-engineer", label: "saved", tone: "blue" },
+  { id: "you-devops", from: "you", to: "devops-engineer", label: "pending", tone: "muted" },
   { id: "you-robotics", from: "you", to: "robotics-engineer", label: "physics", tone: "green" },
-  { id: "ai-python", from: "ai-engineer", to: "ai-python", tone: "primary" },
-  { id: "ai-math", from: "ai-engineer", to: "ai-math", tone: "primary" },
-  { id: "ai-english", from: "ai-engineer", to: "ai-english", tone: "primary" },
-  { id: "software-js", from: "software-engineer", to: "software-js", tone: "blue" },
-  { id: "software-api", from: "software-engineer", to: "software-api", tone: "blue" },
-  { id: "software-product", from: "software-engineer", to: "software-product", tone: "blue" },
-  { id: "robotics-physics", from: "robotics-engineer", to: "robotics-physics", tone: "green" },
+  { id: "you-software", from: "you", to: "software-engineer", label: "product", tone: "blue" },
+  { id: "you-business", from: "you", to: "tech-entrepreneur", label: "startup", tone: "yellow" },
+  { id: "python-basics", from: "python-programmer", to: "python-basics", tone: "primary" },
+  { id: "python-algorithms", from: "python-programmer", to: "algorithms", tone: "primary" },
+  { id: "python-databases", from: "python-programmer", to: "databases", tone: "blue" },
+  { id: "python-git", from: "python-programmer", to: "git", tone: "blue" },
+  { id: "python-english", from: "python-programmer", to: "english", tone: "yellow" },
+  { id: "python-search", from: "python-programmer", to: "search-skill", tone: "green" },
+  { id: "python-time", from: "python-programmer", to: "time-management", tone: "green" },
+  { id: "ai-python", from: "ai-engineer", to: "ai-python", tone: "blue" },
+  { id: "ai-algorithms", from: "ai-engineer", to: "algorithms", tone: "primary" },
+  { id: "ai-english", from: "ai-engineer", to: "english", tone: "yellow" },
+  { id: "devops-git", from: "devops-engineer", to: "git", tone: "blue" },
+  { id: "devops-search", from: "devops-engineer", to: "search-skill", tone: "green" },
   { id: "robotics-iot", from: "robotics-engineer", to: "robotics-iot", tone: "green" },
-  { id: "robotics-cad", from: "robotics-engineer", to: "robotics-cad", tone: "green" },
-  { id: "python-bot", from: "ai-python", to: "ai-bot", tone: "primary" },
-  { id: "python-data", from: "ai-python", to: "ai-data", tone: "primary" },
-  { id: "math-olympiad", from: "ai-math", to: "ai-olympiad", tone: "yellow" },
-  { id: "english-olympiad", from: "ai-english", to: "ai-olympiad", tone: "yellow" },
-  { id: "js-event", from: "software-js", to: "software-local-event", tone: "blue" },
-  { id: "api-event", from: "software-api", to: "software-local-event", tone: "blue" },
+  { id: "robotics-python", from: "robotics-engineer", to: "python-basics", tone: "primary" },
+  { id: "software-git", from: "software-engineer", to: "git", tone: "blue" },
+  { id: "software-product", from: "software-engineer", to: "software-product", tone: "yellow" },
+  { id: "business-product", from: "tech-entrepreneur", to: "software-product", tone: "yellow" },
+  { id: "business-time", from: "tech-entrepreneur", to: "time-management", tone: "green" },
+  { id: "basics-course", from: "python-basics", to: "free-course", tone: "primary" },
+  { id: "basics-bot", from: "python-basics", to: "telegram-bot", tone: "primary" },
+  { id: "ai-python-bot", from: "ai-python", to: "ai-bot", tone: "blue" },
+  { id: "databases-parser", from: "databases", to: "web-parser", tone: "blue" },
+  { id: "git-bot", from: "git", to: "telegram-bot", tone: "blue" },
+  { id: "algorithms-course", from: "algorithms", to: "free-course", tone: "primary" },
+  { id: "algorithms-olympiad", from: "algorithms", to: "ai-olympiad", tone: "primary" },
   { id: "product-hackathon", from: "software-product", to: "software-hackathon", tone: "yellow" },
-  { id: "physics-sensor", from: "robotics-physics", to: "robotics-sensor", tone: "green" },
   { id: "iot-sensor", from: "robotics-iot", to: "robotics-sensor", tone: "green" },
-  { id: "cad-demo", from: "robotics-cad", to: "robotics-demo-day", tone: "green" },
-  { id: "bot-aitu", from: "ai-bot", to: "aitu", tone: "primary" },
-  { id: "data-nu", from: "ai-data", to: "nu", tone: "primary" },
-  { id: "olympiad-nu", from: "ai-olympiad", to: "nu", tone: "yellow" },
-  { id: "event-kbtu", from: "software-local-event", to: "kbtu", tone: "blue" },
-  { id: "hackathon-aitu", from: "software-hackathon", to: "aitu", tone: "yellow" },
+  { id: "english-nu", from: "english", to: "nu", tone: "yellow" },
+  { id: "course-aitu", from: "free-course", to: "aitu", tone: "green" },
+  { id: "bot-aitu", from: "telegram-bot", to: "aitu", tone: "primary" },
+  { id: "bot-nu", from: "telegram-bot", to: "nu", tone: "primary" },
+  { id: "ai-bot-aitu", from: "ai-bot", to: "aitu", tone: "blue" },
+  { id: "ai-bot-nu", from: "ai-bot", to: "nu", tone: "primary" },
+  { id: "parser-aitu", from: "web-parser", to: "aitu", tone: "blue" },
+  { id: "parser-kaist", from: "web-parser", to: "kaist", tone: "blue" },
+  { id: "parser-nu", from: "web-parser", to: "nu", tone: "primary" },
+  { id: "olympiad-nu", from: "ai-olympiad", to: "nu", tone: "primary" },
+  { id: "olympiad-kaist", from: "ai-olympiad", to: "kaist", tone: "yellow" },
   { id: "hackathon-kbtu", from: "software-hackathon", to: "kbtu", tone: "yellow" },
+  { id: "hackathon-aitu", from: "software-hackathon", to: "aitu", tone: "green" },
   { id: "sensor-satbayev", from: "robotics-sensor", to: "satbayev", tone: "green" },
-  { id: "sensor-nu", from: "robotics-sensor", to: "nu", tone: "green" },
-  { id: "demo-satbayev", from: "robotics-demo-day", to: "satbayev", tone: "green" }
+  { id: "sensor-nu", from: "robotics-sensor", to: "nu", tone: "primary" }
 ];

@@ -118,6 +118,7 @@ export function PortfolioScreen({
       careerGoal:
         fields.careerGoal ||
         context?.careerTest?.resultTitle ||
+        (context?.hollandResult ? `Holland ${context.hollandResult.code}: ${context.hollandResult.topTypes.join(", ")}` : "") ||
         context?.path?.summary ||
         context?.quizAnswers?.interests ||
         "",
@@ -345,7 +346,11 @@ function describeContext(context: PortfolioGenerationContext) {
     context.quizAnswers && Object.keys(context.quizAnswers).length
       ? `Diagnostic: ${Object.values(context.quizAnswers).join(", ")}`
       : "Diagnostic: pending",
-    context.careerTest?.resultTitle ? `Career test: ${context.careerTest.resultTitle}` : "Career test: pending",
+    context.careerTest?.resultTitle
+      ? `Career test: ${context.careerTest.resultTitle}`
+      : context.hollandResult
+        ? `Holland: ${context.hollandResult.code} (${context.hollandResult.topTypes.join(", ")})`
+        : "Career test: pending",
     context.path?.summary ? `Path: ${context.path.summary}` : "",
     context.desiredPath?.targetTitle ? `Target: ${context.desiredPath.targetTitle}` : ""
   ].filter(Boolean);

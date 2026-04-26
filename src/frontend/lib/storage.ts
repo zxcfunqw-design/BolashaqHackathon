@@ -8,6 +8,7 @@ import type {
   LoginInput,
   PortfolioDraft,
   PortfolioFields,
+  HollandResult,
   QuizAnswers,
   RegisterInput,
   UserAccount,
@@ -56,6 +57,7 @@ function createDefaultUserData(): UserAppData {
     selectedGoals: [],
     quizAnswers: {},
     careerTest: null,
+    hollandResult: null,
     path: mockUserPath,
     desiredPath: null,
     portfolio: {
@@ -260,6 +262,16 @@ export function updateQuizAnswers(quizAnswers: QuizAnswers) {
   }));
 }
 
+export function updateHollandResult(hollandResult: HollandResult | null) {
+  return updateCurrentUser((user) => ({
+    ...user,
+    data: {
+      ...user.data,
+      hollandResult
+    }
+  }));
+}
+
 export function updateUserPath(path: UserPath, onboardingCompleted = false) {
   return updateCurrentUser((user) => ({
     ...user,
@@ -384,11 +396,11 @@ function createRecommendedPath(user: UserAccount | null): UserPath {
             directions: ["AI", "Data Science", "Computer Science"],
             skills: wantsContest ? ["Math", "Python", "English"] : ["Python", "Math", "English"],
             project: wantsContest ? "Olympiad preparation portfolio" : "Telegram bot / data dashboard",
-            opportunity: wantsGrant ? "Nazarbayev University grant route" : "Astana IT University",
-            recommendedGraphNodeIds: wantsGrant
-              ? ["you", "ai-engineer", "ai-math", "ai-olympiad", "nu"]
-              : ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"]
-          };
+          opportunity: wantsGrant ? "Nazarbayev University grant route" : "Astana IT University",
+          recommendedGraphNodeIds: wantsGrant
+            ? ["you", "ai-engineer", "algorithms", "ai-olympiad", "nu"]
+            : ["you", "python-programmer", "python-basics", "telegram-bot", "aitu"]
+        };
 
   return {
     ...mockUserPath,

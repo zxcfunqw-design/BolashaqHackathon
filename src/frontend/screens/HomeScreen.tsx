@@ -144,7 +144,11 @@ function describePortfolioContext(context?: PortfolioGenerationContext) {
     context.quizAnswers && Object.keys(context.quizAnswers).length
       ? `diagnostic: ${Object.values(context.quizAnswers).join(", ")}`
       : "diagnostic: pending",
-    context.careerTest?.resultTitle ? `career test: ${context.careerTest.resultTitle}` : "career test: ready",
+    context.careerTest?.resultTitle
+      ? `career test: ${context.careerTest.resultTitle}`
+      : context.hollandResult
+        ? `Holland ${context.hollandResult.code}: ${context.hollandResult.topTypes.join(", ")}`
+        : "career test: ready",
     context.desiredPath?.targetTitle ? `target: ${context.desiredPath.targetTitle}` : ""
   ].filter(Boolean);
 

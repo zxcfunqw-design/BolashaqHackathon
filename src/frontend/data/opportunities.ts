@@ -2,33 +2,33 @@ import type { Opportunity } from "../types";
 
 export const opportunities: Opportunity[] = [
   {
-    id: "stem-hackathon",
-    title: "STEM Hackathon for Rural Schools",
-    type: "Hackathon",
-    format: "online",
-    grades: "8-11",
-    language: "Қазақша / Русский",
-    internet: "low",
-    deadline: "15 May"
-  },
-  {
-    id: "robotics-week",
-    title: "Robotics Project Week",
-    type: "Mini-project",
-    format: "hybrid",
-    grades: "7-10",
-    language: "Русский",
+    id: "nu-python-track",
+    title: "Назарбаев Университет: Engineering and Digital Sciences",
+    type: "Dream university",
+    format: "offline",
+    grades: "10-12",
+    language: "English",
     internet: "medium",
-    deadline: "28 May"
+    deadline: "IELTS 6.5 / NUET 180+ target"
   },
   {
-    id: "eco-grant",
-    title: "Eco Idea Micro Grant",
-    type: "Grant",
-    format: "online",
-    grades: "8-12",
-    language: "Қазақша",
-    internet: "low",
-    deadline: "4 June"
+    id: "kaist-python-track",
+    title: "KAIST International Student Scholarship",
+    type: "International scholarship",
+    format: "offline",
+    grades: "10-12",
+    language: "English",
+    internet: "high",
+    deadline: "SAT 1450+ / TOEFL 83+ target"
+  },
+  {
+    id: "aitu-python-track",
+    title: "Astana IT University: Software Engineering",
+    type: "Regular / backup",
+    format: "offline",
+    grades: "10-12",
+    language: "Қазақша / Русский / English",
+    internet: "medium",
+    deadline: "ЕНТ 110-115+ target"
   }
 ];

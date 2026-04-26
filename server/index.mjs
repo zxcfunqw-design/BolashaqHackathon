@@ -32,6 +32,7 @@ const defaultUserData = () => ({
   selectedGoals: [],
   quizAnswers: {},
   careerTest: null,
+  hollandResult: null,
   path: {
     name: "Aruzhan",
     summary: "IT + Engineering",
@@ -40,7 +41,7 @@ const defaultUserData = () => ({
     skills: ["Python", "Math", "English"],
     project: "Telegram bot / sensor prototype",
     opportunity: "STEM Hackathon",
-    recommendedGraphNodeIds: ["you", "ai-engineer", "ai-python", "ai-bot", "aitu"],
+    recommendedGraphNodeIds: ["you", "python-programmer", "python-basics", "telegram-bot", "aitu"],
     savedAt: new Date().toISOString(),
     nodes: []
   },
@@ -217,6 +218,7 @@ function buildPortfolioPrompt(fields = {}, context = {}) {
     `Selected goals: ${formatList(context.selectedGoals)}`,
     `Current diagnostic answers: ${formatRecord(context.quizAnswers)}`,
     `Future career test result: ${formatCareerTest(context)}`,
+    `Holland RIASEC result: ${formatHollandResult(context)}`,
     "",
     "[Graph and financial path]",
     `Recommended path summary: ${context.path?.summary || "Not provided"}`,
@@ -280,6 +282,20 @@ function formatCareerTest(context = {}) {
     Array.isArray(test.risks) && test.risks.length ? `risks: ${test.risks.join(", ")}` : "",
     test.scores ? `scores: ${formatScores(test.scores)}` : "",
     test.answers ? `answers: ${formatRecord(test.answers)}` : ""
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
+function formatHollandResult(context = {}) {
+  const holland = context.hollandResult;
+  if (!holland) return "Not completed yet.";
+
+  return [
+    holland.code ? `code: ${holland.code}` : "",
+    Array.isArray(holland.topTypes) && holland.topTypes.length ? `top types: ${holland.topTypes.join(", ")}` : "",
+    holland.scores ? `scores: ${formatScores(holland.scores)}` : "",
+    holland.agentPrompt ? `agent prompt: ${holland.agentPrompt}` : ""
   ]
     .filter(Boolean)
     .join("; ");

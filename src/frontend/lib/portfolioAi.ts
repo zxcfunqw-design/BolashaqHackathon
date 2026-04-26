@@ -103,6 +103,7 @@ function buildPrompt(fields: PortfolioFields, context?: PortfolioGenerationConte
     `Selected goals: ${formatList(context?.selectedGoals)}`,
     `Current diagnostic answers: ${formatRecord(context?.quizAnswers)}`,
     `Future career test result: ${formatCareerTest(context)}`,
+    `Holland RIASEC result: ${formatHollandResult(context)}`,
     "",
     "[Graph and financial path]",
     `Recommended path summary: ${context?.path?.summary || "Not provided"}`,
@@ -215,6 +216,20 @@ function formatCareerTest(context?: PortfolioGenerationContext) {
     .join("; ");
 }
 
+function formatHollandResult(context?: PortfolioGenerationContext) {
+  const holland = context?.hollandResult;
+  if (!holland) return "Not completed yet.";
+
+  return [
+    `code: ${holland.code}`,
+    holland.topTypes?.length ? `top types: ${holland.topTypes.join(", ")}` : "",
+    holland.scores ? `scores: ${formatScores(holland.scores)}` : "",
+    holland.agentPrompt ? `agent prompt: ${holland.agentPrompt}` : ""
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
 function formatScores(values: Record<string, number>) {
   return Object.entries(values)
     .map(([key, value]) => `${key}: ${value}`)
@@ -229,6 +244,7 @@ function resolveProfile(fields: PortfolioFields, context?: PortfolioGenerationCo
     careerGoal:
       fields.careerGoal ||
       context?.careerTest?.resultTitle ||
+      (context?.hollandResult ? `Holland ${context.hollandResult.code}: ${context.hollandResult.topTypes.join(", ")}` : "") ||
       context?.path?.summary ||
       "chosen career direction",
     targetUniversity: fields.targetUniversity || context?.desiredPath?.targetTitle || "",

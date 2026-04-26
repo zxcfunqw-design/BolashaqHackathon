@@ -1,24 +1,40 @@
-import { ArrowRight, BriefcaseBusiness, ClipboardCheck, MapPinned, Route, Trophy } from "lucide-react";
-import { formatKztCompact } from "../lib/financialCalculator";
-import type { DesiredPath, MainTab, UserPath } from "../types";
+import {
+  ArrowRight,
+  BrainCircuit,
+  BriefcaseBusiness,
+  ClipboardCheck,
+  MapPinned,
+  Route,
+  Trophy
+} from "lucide-react";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
+import { formatKztCompact } from "../lib/financialCalculator";
+import type { DesiredPath, HollandResult, MainTab, UserPath } from "../types";
 
 type DashboardScreenProps = {
   desiredPath?: DesiredPath | null;
   path: UserPath;
+  hollandResult?: HollandResult | null;
   onNavigate: (tab: MainTab) => void;
 };
 
 const dashboardItems = [
-  { title: "My Graph", subtitle: "7 connected steps", tab: "path" as MainTab, icon: Route, tone: "green" },
-  { title: "Next Step", subtitle: "Finish Python lesson 3", tab: "plan" as MainTab, icon: ClipboardCheck, tone: "blue" },
-  { title: "90-Day Plan", subtitle: "22% complete", tab: "plan" as MainTab, icon: MapPinned, tone: "green" },
-  { title: "3 Matching Opportunities", subtitle: "Low internet options", tab: "opportunities" as MainTab, icon: Trophy, tone: "yellow" },
-  { title: "Portfolio Draft", subtitle: "Ready to generate", tab: "portfolio" as MainTab, icon: BriefcaseBusiness, tone: "blue" }
+  { title: "My Graph", subtitle: "Connected DFS paths", tab: "path" as MainTab, icon: Route },
+  { title: "Next Step", subtitle: "Finish Python lesson 3", tab: "plan" as MainTab, icon: ClipboardCheck },
+  { title: "90-Day Plan", subtitle: "Portfolio proof roadmap", tab: "plan" as MainTab, icon: MapPinned },
+  { title: "Matching Opportunities", subtitle: "Saved low-internet options", tab: "opportunities" as MainTab, icon: Trophy },
+  { title: "Portfolio Draft", subtitle: "Ready to generate", tab: "portfolio" as MainTab, icon: BriefcaseBusiness }
 ] as const;
 
-export function DashboardScreen({ desiredPath, path, onNavigate }: DashboardScreenProps) {
+export function DashboardScreen({
+  desiredPath,
+  path,
+  hollandResult,
+  onNavigate
+}: DashboardScreenProps) {
+  const topHollandTypes = hollandResult?.topTypes.join(" + ");
+
   return (
     <div className="space-y-4">
       <section className="rounded-[28px] bg-qadam-primary p-5 text-white shadow-soft">
@@ -40,6 +56,22 @@ export function DashboardScreen({ desiredPath, path, onNavigate }: DashboardScre
       </section>
 
       <div className="grid gap-3">
+        {hollandResult ? (
+          <Card>
+            <div className="flex items-center gap-3">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700">
+                <BrainCircuit size={22} />
+              </div>
+              <div>
+                <h3 className="font-bold">AI Agent Profile</h3>
+                <p className="text-sm text-qadam-muted">
+                  Holland {hollandResult.code}: {topHollandTypes}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+
         {dashboardItems.map((item) => {
           const Icon = item.icon;
 
