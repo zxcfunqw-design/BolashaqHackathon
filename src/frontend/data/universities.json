@@ -1,0 +1,42 @@
+[
+  {
+    "id": "aitu",
+    "name": "Astana IT University",
+    "city": "Astana",
+    "focus": ["Computer Science", "Software Engineering", "Big Data", "Cybersecurity", "Smart Technologies"],
+    "fitFor": ["Software Engineer", "Data / AI Specialist", "Cybersecurity"],
+    "profileSubjects": ["Math", "Computer Science"],
+    "internetFriendlyPreparation": "Can prepare with phone-first Python, math practice and online portfolio tasks.",
+    "sourceUrl": "https://astanait.edu.kz/en/bachelor/"
+  },
+  {
+    "id": "nu",
+    "name": "Nazarbayev University",
+    "city": "Astana",
+    "focus": ["Engineering", "Computer Science", "Electrical and Computer Engineering", "Robotics-related research"],
+    "fitFor": ["Data / AI Specialist", "Robotics Engineer", "Research Engineer"],
+    "profileSubjects": ["Math", "Physics", "English"],
+    "internetFriendlyPreparation": "Best preparation: English reading, math/physics depth and one research-style project story.",
+    "sourceUrl": "https://old.nu.edu.kz/admissions/undergraduate-eng"
+  },
+  {
+    "id": "satbayev",
+    "name": "Satbayev University",
+    "city": "Almaty",
+    "focus": ["Automation and Robotics", "Computer Science", "Engineering", "Telecommunications"],
+    "fitFor": ["Robotics Engineer", "IoT Engineer", "Industrial Automation"],
+    "profileSubjects": ["Math", "Physics"],
+    "internetFriendlyPreparation": "Good route for sensor prototypes, robotics simulations and practical engineering tasks.",
+    "sourceUrl": "https://official.satbayev.university/en/programs"
+  },
+  {
+    "id": "kbtu",
+    "name": "KBTU",
+    "city": "Almaty",
+    "focus": ["Information Systems", "Automation and Control", "IT and Engineering", "Industry-oriented programs"],
+    "fitFor": ["Software Engineer", "Automation Specialist", "Product-minded Engineer"],
+    "profileSubjects": ["Math", "Computer Science", "Physics"],
+    "internetFriendlyPreparation": "Strong fit for a practical software portfolio plus project explanation in English/Russian.",
+    "sourceUrl": "https://kbtu.edu.kz/en/schools/school-of-information-technology-and-engineering/bachelor-s-educational-programs-of-the-school-of-information-technology-and-engineering"
+  }
+]

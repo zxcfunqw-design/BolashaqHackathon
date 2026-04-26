@@ -69,6 +69,46 @@ export type PortfolioDraft = {
   warning?: string;
 };
 
+export type GraphAiText = {
+  nodeTitle: string;
+  studentFit: string;
+  whyThisPath: string[];
+  nextSteps: string[];
+  universityNotes: string[];
+  riskNote: string;
+  generatedAt: string;
+};
+
+export type GeneratedGraphNode = {
+  id: string;
+  type: "direction" | "skill" | "action" | "opportunity";
+  layer: 2 | 3 | 4 | 5;
+  title: string;
+  subtitle: string;
+  costKzt: number;
+  costNote?: string;
+  fundingOptions?: string[];
+  x: number;
+  y: number;
+  details: string[];
+  sourceUrl?: string;
+  sourceLabel?: string;
+};
+
+export type GeneratedGraphEdge = {
+  id: string;
+  from: string;
+  to: string;
+  label?: string;
+  tone?: "primary" | "blue" | "yellow" | "green" | "muted";
+};
+
+export type GeneratedGraphExpansion = {
+  nodes: GeneratedGraphNode[];
+  edges: GeneratedGraphEdge[];
+  generatedAt: string;
+};
+
 export type Opportunity = {
   id: string;
   title: string;
@@ -86,6 +126,8 @@ export type UserAppData = {
   quizAnswers: QuizAnswers;
   path: UserPath;
   portfolio: PortfolioDraft;
+  graphTexts: Record<string, GraphAiText>;
+  graphExpansion: GeneratedGraphExpansion;
   savedOpportunities: string[];
 };
 

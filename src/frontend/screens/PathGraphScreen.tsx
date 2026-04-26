@@ -1,4 +1,4 @@
-import { Calculator, ExternalLink, LocateFixed, Minus, Move, Plus, WalletCards } from "lucide-react";
+import { Calculator, ExternalLink, LocateFixed, Minus, Move, Plus, Sparkles, WandSparkles, WalletCards } from "lucide-react";
 import { PointerEvent, useMemo, useRef, useState } from "react";
 import {
   graphBoard,
@@ -13,12 +13,22 @@ import {
   formatKztCompact,
   type FinancialPath
 } from "../lib/financialCalculator";
-import type { UserPath } from "../types";
+import { expandGraphWithAi } from "../lib/graphExpand";
+import { generateGraphText } from "../lib/graphAi";
+import type { GeneratedGraphExpansion, GraphAiText, Language, QuizAnswers, UserPath } from "../types";
 import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 
 type PathGraphScreenProps = {
+  graphExpansion?: GeneratedGraphExpansion;
+  graphTexts: Record<string, GraphAiText>;
+  language: Language;
   path: UserPath;
+  quizAnswers: QuizAnswers;
+  selectedGoals: string[];
+  onGraphExpanded: (graphExpansion: GeneratedGraphExpansion) => void;
+  onGraphTextGenerated: (nodeId: string, graphText: GraphAiText) => void;
 };
 
 type ExpandedBranch = {
@@ -56,32 +66,53 @@ const edgeColors: Record<NonNullable<UniversityGraphEdge["tone"]>, string> = {
   muted: "#94A3B8"
 };
 
-export function PathGraphScreen({ path }: PathGraphScreenProps) {
+export function PathGraphScreen({
+  graphExpansion,
+  graphTexts,
+  language,
+  path,
+  quizAnswers,
+  selectedGoals,
+  onGraphExpanded,
+  onGraphTextGenerated
+}: PathGraphScreenProps) {
   const [scale, setScale] = useState(0.74);
   const [offset, setOffset] = useState({ x: 8, y: 18 });
   const [selectedId, setSelectedId] = useState("you");
   const [dragging, setDragging] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [expandBusy, setExpandBusy] = useState(false);
+  const [expandError, setExpandError] = useState("");
   const [expanded, setExpanded] = useState<ExpandedBranch>({
     directionId: "ai-engineer",
     skillId: "ai-python",
     actionId: "ai-bot"
   });
   const lastPointer = useRef({ x: 0, y: 0 });
+  const graphNodes = useMemo(
+    () => mergeNodes(universityGraphNodes, graphExpansion?.nodes ?? []),
+    [graphExpansion?.nodes]
+  );
+  const graphEdges = useMemo(
+    () => mergeEdges(universityGraphEdges, graphExpansion?.edges ?? []),
+    [graphExpansion?.edges]
+  );
 
   const nodesById = useMemo(
-    () => new Map(universityGraphNodes.map((node) => [node.id, node])),
-    []
+    () => new Map(graphNodes.map((node) => [node.id, node])),
+    [graphNodes]
   );
 
   const outgoingBySource = useMemo(() => {
     const map = new Map<string, UniversityGraphEdge[]>();
-    universityGraphEdges.forEach((edge) => {
+    graphEdges.forEach((edge) => {
       const current = map.get(edge.from) ?? [];
       current.push(edge);
       map.set(edge.from, current);
     });
     return map;
-  }, []);
+  }, [graphEdges]);
 
   const visibleNodeIds = useMemo(() => {
     const ids = new Set<string>(["you"]);
@@ -100,43 +131,48 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
       getTargets(expanded.actionId, outgoingBySource).forEach((id) => ids.add(id));
     }
 
+    ids.add(selectedId);
+    getTargets(selectedId, outgoingBySource).forEach((id) => ids.add(id));
+
     return ids;
-  }, [expanded, outgoingBySource]);
+  }, [expanded, outgoingBySource, selectedId]);
 
   const visibleEdges = useMemo(
     () =>
-      universityGraphEdges.filter((edge) => {
+      graphEdges.filter((edge) => {
         if (edge.from === "you") return true;
         return (
           edge.from === expanded.directionId ||
           edge.from === expanded.skillId ||
-          edge.from === expanded.actionId
+          edge.from === expanded.actionId ||
+          edge.from === selectedId
         );
       }),
-    [expanded]
+    [expanded, graphEdges, selectedId]
   );
 
-  const selectedNode = nodesById.get(selectedId) ?? universityGraphNodes[0];
+  const selectedNode = nodesById.get(selectedId) ?? graphNodes[0];
+  const selectedGraphText = graphTexts[selectedNode.id];
   const allFinancialPaths = useMemo(
     () =>
       calculateFinancialPaths({
-        nodes: universityGraphNodes,
-        edges: universityGraphEdges,
+        nodes: graphNodes,
+        edges: graphEdges,
         startId: "you"
       }),
-    []
+    [graphEdges, graphNodes]
   );
   const selectedFinancialPaths = useMemo(
     () =>
       selectedNode.type === "opportunity"
         ? calculateFinancialPaths({
-            nodes: universityGraphNodes,
-            edges: universityGraphEdges,
+            nodes: graphNodes,
+            edges: graphEdges,
             startId: "you",
             targetId: selectedNode.id
           })
         : [],
-    [selectedNode.id, selectedNode.type]
+    [graphEdges, graphNodes, selectedNode.id, selectedNode.type]
   );
   const selectedFinancialPath = selectedFinancialPaths[0] ?? null;
   const cheapestPaths = allFinancialPaths.slice(0, 3);
@@ -235,6 +271,53 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
     setSelectedId(financialPath.targetId);
   };
 
+  const handleGenerateGraphText = async () => {
+    setAiBusy(true);
+    setAiError("");
+
+    try {
+      const graphText = await generateGraphText({
+        language,
+        path,
+        quizAnswers,
+        selectedGoals,
+        selectedNode
+      });
+      onGraphTextGenerated(selectedNode.id, graphText);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "AI text generation failed.");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const handleExpandGraph = async () => {
+    setExpandBusy(true);
+    setExpandError("");
+
+    try {
+      const expansion = await expandGraphWithAi({
+        existingEdges: graphEdges,
+        existingNodes: graphNodes,
+        language,
+        path,
+        quizAnswers,
+        selectedGoals,
+        selectedNode
+      });
+      const mergedExpansion = {
+        nodes: mergeNodes(graphExpansion?.nodes ?? [], expansion.nodes),
+        edges: mergeEdges(graphExpansion?.edges ?? [], expansion.edges),
+        generatedAt: expansion.generatedAt
+      };
+      onGraphExpanded(mergedExpansion);
+    } catch (error) {
+      setExpandError(error instanceof Error ? error.message : "Graph expansion failed.");
+    } finally {
+      setExpandBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <section>
@@ -328,7 +411,7 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
               })}
             </svg>
 
-            {universityGraphNodes.map((node) => {
+            {graphNodes.map((node) => {
               if (!visibleNodeIds.has(node.id)) return null;
 
               const selected = selectedNode.id === node.id;
@@ -369,6 +452,34 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
           </div>
         </div>
       </div>
+
+      <Card>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Badge tone="blue">AI expansion</Badge>
+            <h3 className="mt-3 text-lg font-black">Add more nodes</h3>
+            <p className="mt-1 text-sm leading-6 text-qadam-muted">
+              Add universities, skills, opportunities and hackathon-style actions based on your selected node.
+            </p>
+          </div>
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue">
+            <WandSparkles size={20} />
+          </div>
+        </div>
+        <Button className="mt-4" disabled={expandBusy} fullWidth onClick={handleExpandGraph}>
+          {expandBusy ? "Expanding graph..." : "Expand graph with AI"}
+        </Button>
+        {expandError ? (
+          <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            {expandError}
+          </p>
+        ) : null}
+        {graphExpansion?.nodes.length ? (
+          <p className="mt-3 rounded-2xl bg-qadam-bg px-3 py-2 text-sm leading-6 text-qadam-muted">
+            AI draft nodes added: {graphExpansion.nodes.length}. Click generated nodes on the canvas to inspect them.
+          </p>
+        ) : null}
+      </Card>
 
       <Card>
         <div className="flex items-start justify-between gap-3">
@@ -495,6 +606,68 @@ export function PathGraphScreen({ path }: PathGraphScreenProps) {
           ))}
         </ul>
       </Card>
+
+      <Card>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Badge tone="blue">AI text</Badge>
+            <h3 className="mt-3 text-lg font-black">Personalized graph explanation</h3>
+            <p className="mt-1 text-sm leading-6 text-qadam-muted">
+              4o-mini adapts this node using selected goals, quiz answers, path data and universities JSON.
+            </p>
+          </div>
+          <div className="grid min-h-11 min-w-11 place-items-center rounded-2xl bg-blue-50 text-qadam-blue">
+            <Sparkles size={20} />
+          </div>
+        </div>
+
+        <Button
+          className="mt-4"
+          disabled={aiBusy}
+          fullWidth
+          onClick={handleGenerateGraphText}
+          variant="primary"
+        >
+          {aiBusy ? "Generating..." : selectedGraphText ? "Refresh AI text" : "Generate AI text"}
+        </Button>
+
+        {aiError ? (
+          <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            {aiError}
+          </p>
+        ) : null}
+
+        {selectedGraphText ? (
+          <div className="mt-4 space-y-3">
+            <p className="rounded-2xl bg-qadam-bg px-3 py-3 text-sm leading-6 text-qadam-graphite">
+              {selectedGraphText.studentFit}
+            </p>
+            <AiList title="Why this path" items={selectedGraphText.whyThisPath} />
+            <AiList title="Next steps" items={selectedGraphText.nextSteps} />
+            <AiList title="University notes" items={selectedGraphText.universityNotes} />
+            <p className="rounded-2xl bg-yellow-50 px-3 py-2 text-sm leading-6 text-yellow-900">
+              {selectedGraphText.riskNote}
+            </p>
+          </div>
+        ) : null}
+      </Card>
+    </div>
+  );
+}
+
+function AiList({ items, title }: { items: string[]; title: string }) {
+  if (!items.length) return null;
+
+  return (
+    <div>
+      <p className="text-xs font-black uppercase text-qadam-primary">{title}</p>
+      <ul className="mt-2 space-y-2">
+        {items.map((item) => (
+          <li className="rounded-2xl bg-qadam-bg px-3 py-2 text-sm leading-6 text-qadam-graphite" key={item}>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -591,4 +764,16 @@ function describeFinancialPath(financialPath: FinancialPath) {
 
 function mod(value: number, divisor: number) {
   return ((value % divisor) + divisor) % divisor;
+}
+
+function mergeNodes<T extends { id: string }>(base: T[], additions: T[]) {
+  const map = new Map(base.map((item) => [item.id, item]));
+  additions.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
+}
+
+function mergeEdges<T extends { id: string }>(base: T[], additions: T[]) {
+  const map = new Map(base.map((item) => [item.id, item]));
+  additions.forEach((item) => map.set(item.id, item));
+  return Array.from(map.values());
 }

@@ -7,16 +7,31 @@ import {
   extractOpenAiResponseText,
   type PortfolioFields
 } from "./src/frontend/lib/portfolioAi";
+import {
+  createOpenAiGraphTextDraft,
+  createOpenAiGraphTextRequest,
+  type OpenAiGraphTextRequest
+} from "./src/frontend/lib/graphAi";
+import {
+  createOpenAiGraphExpansion,
+  createOpenAiGraphExpandRequest,
+  type OpenAiGraphExpandRequest
+} from "./src/frontend/lib/graphExpand";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const openAiApiKey = env.OPENAI_API_KEY || env.VITE_OPENAI_API_KEY;
-  const openAiModel = env.OPENAI_MODEL || env.VITE_OPENAI_MODEL || "gpt-5.2";
+  const openAiModel = env.OPENAI_MODEL || env.VITE_OPENAI_MODEL || "gpt-4o-mini";
 
   return {
-    plugins: [react(), portfolioApiPlugin(openAiApiKey, openAiModel)],
+    plugins: [
+      react(),
+      portfolioApiPlugin(openAiApiKey, openAiModel),
+      graphTextApiPlugin(openAiApiKey, openAiModel),
+      graphExpandApiPlugin(openAiApiKey, openAiModel)
+    ],
     server: {
       host: "127.0.0.1"
     },
@@ -86,6 +101,140 @@ function portfolioApiPlugin(openAiApiKey: string | undefined, openAiModel: strin
           sendJson(response, 200, createOpenAiPortfolioDraft(text, openAiModel));
         } catch (error) {
           const message = error instanceof Error ? error.message : "Portfolio generation failed.";
+          sendJson(response, 500, { error: { message } });
+        }
+      });
+    }
+  };
+}
+
+function graphExpandApiPlugin(openAiApiKey: string | undefined, openAiModel: string): Plugin {
+  return {
+    name: "qadamgraph-graph-expand-api",
+    configureServer(server) {
+      server.middlewares.use("/api/graph-expand", async (request, response) => {
+        if (request.method !== "POST") {
+          sendJson(response, 405, { error: { message: "Method not allowed" } });
+          return;
+        }
+
+        if (!openAiApiKey) {
+          sendJson(response, 500, {
+            error: {
+              message:
+                "OpenAI key is not configured on the dev server. Add OPENAI_API_KEY to .env and restart npm.cmd run dev."
+            }
+          });
+          return;
+        }
+
+        try {
+          const body = (await readJsonBody(request)) as OpenAiGraphExpandRequest;
+
+          if (!body.selectedNode || !body.path || !body.existingNodes || !body.existingEdges) {
+            sendJson(response, 400, { error: { message: "Graph expansion context is missing." } });
+            return;
+          }
+
+          const openAiResponse = await fetch(OPENAI_RESPONSES_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${openAiApiKey}`
+            },
+            body: JSON.stringify(createOpenAiGraphExpandRequest(body, openAiModel))
+          });
+
+          if (!openAiResponse.ok) {
+            const details = await readOpenAiError(openAiResponse);
+            sendJson(response, openAiResponse.status, {
+              error: {
+                message: details || `OpenAI request failed with status ${openAiResponse.status}`
+              }
+            });
+            return;
+          }
+
+          const data = (await openAiResponse.json()) as unknown;
+          const text = extractOpenAiResponseText(data);
+
+          if (!text) {
+            sendJson(response, 502, {
+              error: { message: "OpenAI response did not include text output." }
+            });
+            return;
+          }
+
+          sendJson(response, 200, createOpenAiGraphExpansion(text, body));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Graph expansion failed.";
+          sendJson(response, 500, { error: { message } });
+        }
+      });
+    }
+  };
+}
+
+function graphTextApiPlugin(openAiApiKey: string | undefined, openAiModel: string): Plugin {
+  return {
+    name: "qadamgraph-graph-text-api",
+    configureServer(server) {
+      server.middlewares.use("/api/graph-text", async (request, response) => {
+        if (request.method !== "POST") {
+          sendJson(response, 405, { error: { message: "Method not allowed" } });
+          return;
+        }
+
+        if (!openAiApiKey) {
+          sendJson(response, 500, {
+            error: {
+              message:
+                "OpenAI key is not configured on the dev server. Add OPENAI_API_KEY to .env and restart npm.cmd run dev."
+            }
+          });
+          return;
+        }
+
+        try {
+          const body = (await readJsonBody(request)) as OpenAiGraphTextRequest;
+
+          if (!body.selectedNode || !body.path || !body.universities) {
+            sendJson(response, 400, { error: { message: "Graph context is missing." } });
+            return;
+          }
+
+          const openAiResponse = await fetch(OPENAI_RESPONSES_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${openAiApiKey}`
+            },
+            body: JSON.stringify(createOpenAiGraphTextRequest(body, openAiModel))
+          });
+
+          if (!openAiResponse.ok) {
+            const details = await readOpenAiError(openAiResponse);
+            sendJson(response, openAiResponse.status, {
+              error: {
+                message: details || `OpenAI request failed with status ${openAiResponse.status}`
+              }
+            });
+            return;
+          }
+
+          const data = (await openAiResponse.json()) as unknown;
+          const text = extractOpenAiResponseText(data);
+
+          if (!text) {
+            sendJson(response, 502, {
+              error: { message: "OpenAI response did not include text output." }
+            });
+            return;
+          }
+
+          sendJson(response, 200, createOpenAiGraphTextDraft(text));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Graph text generation failed.";
           sendJson(response, 500, { error: { message } });
         }
       });

@@ -8,12 +8,23 @@ import {
   refreshCurrentUserFromBackend,
   refreshSavedPath,
   updatePortfolio,
+  updateGraphText,
+  updateGraphExpansion,
   updateQuizAnswers,
   updateSavedOpportunities,
   updateSelectedGoals,
   updateUserLanguage
 } from "./lib/storage";
-import type { Language, MainTab, PortfolioDraft, QuizAnswers, UserAccount, UserPath } from "./types";
+import type {
+  GeneratedGraphExpansion,
+  GraphAiText,
+  Language,
+  MainTab,
+  PortfolioDraft,
+  QuizAnswers,
+  UserAccount,
+  UserPath
+} from "./types";
 import { AuthScreen } from "./screens/AuthScreen";
 import { DashboardScreen } from "./screens/DashboardScreen";
 import { GoalSelectionScreen } from "./screens/GoalSelectionScreen";
@@ -108,6 +119,16 @@ export function App() {
     if (updated) setCurrentUser(updated);
   };
 
+  const handleGraphTextGenerated = (nodeId: string, graphText: GraphAiText) => {
+    const updated = updateGraphText(nodeId, graphText);
+    if (updated) setCurrentUser(updated);
+  };
+
+  const handleGraphExpanded = (graphExpansion: GeneratedGraphExpansion) => {
+    const updated = updateGraphExpansion(graphExpansion);
+    if (updated) setCurrentUser(updated);
+  };
+
   const handleAccountSwitch = () => {
     logoutUser();
     setCurrentUser(null);
@@ -167,7 +188,20 @@ export function App() {
       return <LoadingScreen />;
     }
 
-    if (activeTab === "path") return <PathGraphScreen path={path} />;
+    if (activeTab === "path") {
+      return (
+        <PathGraphScreen
+          graphExpansion={currentUser?.data.graphExpansion}
+          graphTexts={currentUser?.data.graphTexts ?? {}}
+          language={language}
+          path={path}
+          quizAnswers={currentUser?.data.quizAnswers ?? {}}
+          selectedGoals={selectedGoals}
+          onGraphExpanded={handleGraphExpanded}
+          onGraphTextGenerated={handleGraphTextGenerated}
+        />
+      );
+    }
     if (activeTab === "plan") return <PlanScreen />;
     if (activeTab === "opportunities") {
       return (
